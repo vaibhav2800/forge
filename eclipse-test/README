@@ -1,0 +1,22 @@
+Test runner for Eclipse JUnit run configurations.
+
+1. Eclipse Initial Setup:
+– Make a new Eclipse workspace and checkout modules from CVS
+– Run each JUnit run configuration once
+– Disable Project → Build Automatically
+– Project Clean (uncheck ‘start a build immediately’)
+– From Eclipse update site http://eclipse.indweb.hu/ install Headless Eclipse
+  (check ‘Contact all update sites during install to find required software’)
+– close Eclipse
+
+2. Running an automated test:
+Use eclipse-test.py.
+
+I suggest structuring your output directories this way:
+test-results/
+├── run-YYYY.MM.DD-HH:MM:SS/
+└── run-YYYY.MM.DD-HH:MM:SS/
+
+by passing this arg to the program: test-results/run-`date +%Y.%m.%d-%H:%M:%S`
+This structure is useful for automatically finding & investigating
+the results of test runs.

@@ -1,0 +1,6 @@
+Eclipse JUnit test listeners from:
+http://www.eclipse.org/articles/article.php?file=Article-PDEJUnitAntAutomation/index.html
+
+This project helps you set up a classpath & build them.
+
+See lib/README for the required JARs.

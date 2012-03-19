@@ -1,0 +1,3 @@
+This directory is searched recursively for *.jar files.
+Easiest way to get dependencies is:
+cp -r /path/to/eclipse/plugins /path/to/lib

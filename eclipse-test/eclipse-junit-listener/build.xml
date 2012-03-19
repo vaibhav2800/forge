@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+
+<project name="eclipse-junit-listener" default="jar" basedir=".">
+
+	<!-- Run ‘ant -Dsuite=mysuite -Dport=myport’ to customize -->
+	<property name="suite" value="my-test-suite" />
+	<property name="port" value="3737" />
+
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="lib" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+	<property name="dist.lib" value="${dist.dir}/lib" />
+
+	<!-- JAR file name -->
+	<property name="jar.file" value="${dist.dir}/eclipse-junit-listener.jar" />
+
+	<!-- ClassPath -->
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
+
+	<!-- Target to create build directories before compile target -->
+	<target name="prepare">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- Target to clean everything -->
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<!-- Target to compile source code -->
+	<target name="compile" depends="prepare" description="Compile source code (build project).">
+		<javac srcdir="${src.dir}" encoding="UTF-8"
+			destdir="${build.dir}"
+			classpathref="classpath"
+			includeAntRuntime="false" />
+	</target>
+
+	<!-- Target to copy lib/ to dist/lib -->
+	<target name="copy-lib" depends="prepare">
+		<copy todir="${dist.lib}">
+			<fileset dir="${lib.dir}" includes="**/*.jar" />
+		</copy>
+	</target>
+
+	<!-- Target to build the jar -->
+	<target name="jar" depends="compile, copy-lib" description="Build the JAR in dist.">
+		<path id="dist.classpath">
+			<fileset dir="${dist.lib}" includes="**/*.jar" />
+		</path>
+
+		<manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
+			<classpath refid="dist.classpath" />
+		</manifestclasspath>
+
+		<jar jarfile="${jar.file}">
+			<!-- put classes and icons in the jar -->
+			<fileset dir="${build.dir}" />
+			<manifest>
+				<attribute name="Main-Class" value="pde.test.utils.PDETestResultsCollector" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- Target to run the jar -->
+	<target name="run" depends="jar" description="Run the program from the built JAR.">
+		<java jar="${jar.file}" fork="true" dir="${user.dir}">
+			<arg value="${suite}" />
+			<arg value="${port}" />
+		</java>
+	</target>
+
+	<!-- Target to clean and then build the jar -->
+	<target name="rebuild" depends="clean, jar" description="Cleans, compiles and builds the JAR." />
+
+</project>
