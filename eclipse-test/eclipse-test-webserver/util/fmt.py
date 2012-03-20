@@ -10,7 +10,7 @@ html_start_templ = Template('''
             <meta charset="UTF-8"/>
             <title>$title</title>
             <style type="text/css">
-                p.ecltest-result { font-family: monospace; }
+                p.plain-text { white-space: pre; font-family: monospace; }
 
                 tr.good_row td, tr.bad_row td { border-color: black; }
                 tr.good_row td + td { color: green; }
@@ -107,13 +107,13 @@ result_dir_start = '''
 
 
 ecltest_result_templ = Template(
-        '<p class="ecltest-result">$ecltest_result</p>\n')
+        '<p class="plain-text">$ecltest_result</p>\n')
 
 
 def get_ecltest_result(ecltest_result):
     '''Returns HTML code for the ecltest result paragraph'''
     return ecltest_result_templ.substitute({
-        'ecltest_result': html.escape(ecltest_result).replace('\n', '<br/>\n')
+        'ecltest_result': html.escape(ecltest_result)
         })
 
 
@@ -135,8 +135,8 @@ def get_suite_summary(suite):
         'total': suite.nTests,
         'err': suite.nErr,
         'fail': suite.nFail,
-        'runtime': datetime.timedelta(seconds=suite.seconds),
-        'starttime': suite.timestamp
+        'runtime': html.escape(str(datetime.timedelta(seconds=suite.seconds))),
+        'starttime': html.escape(suite.timestamp)
         })
 
 
@@ -161,8 +161,8 @@ testcase_bad_row_templ = Template('''
         </tr>
         <tr class="bad_detail_row">
             <td colspan="2">
-                $problem_type<br/>
-                $problem_msg
+                $problem_type
+                <p class="plain-text">$problem_msg</p>
             </td>
         </tr>
         ''')
@@ -171,12 +171,13 @@ def get_testcase_row(tc):
     if tc.err is None and tc.fail is None:
         return testcase_good_row_templ.substitute({
             'time': tc.time,
-            'name': tc.name
+            'name': html.escape(tc.name)
             })
     else:
         return testcase_bad_row_templ.substitute({
             'time': tc.time,
-            'name': tc.name,
+            'name': html.escape(tc.name),
             'problem_type': 'error' if tc.err is not None else 'failure',
-            'problem_msg': tc.err if tc.err is not None else tc.fail
+            'problem_msg': html.escape(
+                tc.err if tc.err is not None else tc.fail)
             })

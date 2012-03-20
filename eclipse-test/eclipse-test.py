@@ -5,6 +5,7 @@ from collections import OrderedDict
 import datetime
 import json
 import os
+import random
 import socket
 import subprocess
 import sys
@@ -95,6 +96,8 @@ def parse_args():
             Should only use this together with --no-checkout.''')
     parser.add_argument('--parallel', type=int, metavar='N',
             help='Run %(metavar)s launchers in parallel.')
+    parser.add_argument('--random', action='store_true',
+            help='Run launchers in random order')
 
     return parser.parse_args()
 
@@ -185,7 +188,7 @@ def run_suites_sequentially(args, launchers_info):
 
 def printRunTime(f):
     endTime = time.time()
-    print('Run time', datetime.timedelta(seconds=endTime-startTime),
+    print('Run time', datetime.timedelta(seconds=int(endTime-startTime)),
             'from',
             time.strftime("%Y.%m.%d-%H:%M:%S", time.localtime(startTime)),
             'to',
@@ -218,6 +221,11 @@ if __name__ == '__main__':
 
         with open(args.launchers_file, encoding='utf-8') as f:
             launchers_info = json.load(f, object_pairs_hook=OrderedDict)
+
+        if args.random:
+            shuffled_launchers = list(launchers_info.items())
+            random.shuffle(shuffled_launchers)
+            launchers_info = OrderedDict(shuffled_launchers)
 
         port = 50000
         if args.parallel:
