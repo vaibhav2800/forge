@@ -89,6 +89,8 @@ def parse_args():
             holding the JUnit results in the results_dir.
             ''')
 
+    parser.add_argument('--branch', default='HEAD',
+            help='CVS tag/branch to checkout, default %(default)s')
     parser.add_argument('--no-checkout', action='store_true',
             help="Don't checkout from CVS, use existing code in workspace")
     parser.add_argument('--no-build', action='store_true',
@@ -208,7 +210,8 @@ if __name__ == '__main__':
         if not args.no_checkout:
             subprocess.check_call([
                 os.path.join(program_dir, 'cvs-checkout.py'),
-                args.workspace, args.modules_file])
+                args.workspace, args.modules_file,
+                '--branch', args.branch])
 
         if not args.no_build:
             subprocess.check_call([

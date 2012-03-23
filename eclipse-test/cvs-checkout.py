@@ -23,6 +23,8 @@ def parse_args():
             JSON file containing the list of projects (CVS modules) and their
             corresponding CVSROOTs in the following format: ''' +
             json.dumps(sample_modules_info) + '.')
+    parser.add_argument('--branch', default='HEAD',
+            help='''CVS tag/branch to checkout, default %(default)s''')
 
     return parser.parse_args()
 
@@ -36,4 +38,5 @@ if __name__ == '__main__':
     os.chdir(args.dir)
     for (module, cvsroot) in modules_info.items():
         subprocess.check_call(['rm', '-rf', module])
-        subprocess.check_call(['cvs', '-d', cvsroot, 'checkout', module])
+        subprocess.check_call(
+                ['cvs', '-d', cvsroot, 'checkout', '-r', args.branch, module])
