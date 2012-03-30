@@ -10,14 +10,17 @@ html_start_templ = Template('''
             <meta charset="UTF-8"/>
             <title>$title</title>
             <style type="text/css">
+                a.dir-suite-passed { color: $color_pass; }
+                a.dir-suite-failed { color: $color_fail; }
+
                 p.plain-text { white-space: pre; font-family: monospace; }
 
                 tr.good_row td, tr.bad_row td { border-color: black; }
-                tr.good_row td + td { color: green; }
-                tr.bad_row td + td a { color: red; font-weight: bold; }
+                tr.good_row td + td { color: $color_pass; }
+                tr.bad_row td + td a { color: $color_fail; font-weight: bold; }
                 tr.bad_row a { text-decoration: none; }
                 tr.bad_row a:hover { text-decoration: underline; }
-                tr.bad_detail_row { color: Crimson; }
+                tr.bad_detail_row { color: $color_detail; }
 
                 td.testcase-time { text-align: right; }
             </style>
@@ -49,8 +52,13 @@ html_start_templ = Template('''
         ''')
 
 
-def get_html_start(title):
-    return html_start_templ.substitute({'title': html.escape(title)})
+def get_html_start(title, color_pass, color_fail, color_detail):
+    return html_start_templ.substitute({
+        'title': html.escape(title),
+        'color_pass': color_pass,
+        'color_fail': color_fail,
+        'color_detail': color_detail,
+        })
 
 
 html_end = '''
@@ -64,7 +72,7 @@ html_end = '''
 
 
 suite_link_templ = Template('''
-        <a style="color:$color" href="/$dirname#$suitename">$suitename
+        <a class="$class" href="/$dirname#$suitename">$suitename
             ($N)</a>
         ''')
 
@@ -72,16 +80,17 @@ suite_link_templ = Template('''
 def get_suite_link(dirname, suite):
     '''Gets the HTML code for a link to a TestSuite.'''
 
+    nBad = suite.nErr + suite.nFail
     return suite_link_templ.substitute({
-        'color': 'red' if suite.nErr + suite.nFail else 'green',
+        'class': 'dir-suite-failed' if nBad else 'dir-suite-passed',
         'dirname': html.escape(dirname),
         'suitename': html.escape(suite.name),
-        'N': suite.nErr+suite.nFail if suite.nErr+suite.nFail else suite.nTests
+        'N': nBad if nBad else suite.nTests
         })
 
 
 dir_link_templ = Template('''
-        <a style="color:$color" href="/$dirname">$dirname</a>
+        <a class="$class" href="/$dirname">$dirname</a>
         ''')
 
 
@@ -89,7 +98,7 @@ def get_dir_link(dirname, allPassed):
     '''Gets the HTML code for a link to dirname containing test suites.'''
 
     return dir_link_templ.substitute({
-        'color': 'green' if allPassed else 'red',
+        'class': 'dir-suite-passed' if allPassed else 'dir-suite-failed',
         'dirname': html.escape(dirname)
         })
 

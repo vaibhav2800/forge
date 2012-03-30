@@ -16,6 +16,12 @@ def parse_args():
             eclipse-test.py, one for each test run.
             ''')
     parser.add_argument('port', type=int, help='port to listen on')
+    parser.add_argument('--color-pass', default='green',
+            help='HTML color name for passes, default %(default)s.')
+    parser.add_argument('--color-fail', default='red',
+            help='HTML color name for failures, default %(default)s.')
+    parser.add_argument('--color-detail', default='Crimson',
+            help='HTML color name for failure details, default %(default)s.')
     return parser.parse_args()
 
 
@@ -108,7 +114,8 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write('\r\n'.encode('utf-8'))
 
         self.wfile.write(
-                util.fmt.get_html_start('Available Test Runs').encode('utf-8'))
+                util.fmt.get_html_start('Available Test Runs',
+                    **colors).encode('utf-8'))
 
         dirs = get_ecltest_dirs()
         if dirs:
@@ -146,7 +153,8 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.wfile.write('\r\n'.encode('utf-8'))
 
-        self.wfile.write(util.fmt.get_html_start(dirname).encode('utf-8'))
+        self.wfile.write(
+                util.fmt.get_html_start(dirname, **colors).encode('utf-8'))
         self.wfile.write('<p><a href="/">← Back Home</a></p>'.encode('utf-8'))
         self.print_dir_link(dirname)
         self.wfile.write(util.fmt.result_dir_start.encode('utf-8'))
@@ -173,6 +181,13 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     args = parse_args()
+
+    global colors
+    colors = {
+            'color_pass': args.color_pass,
+            'color_fail': args.color_fail,
+            'color_detail': args.color_detail,
+            }
 
     global containing_dir
     containing_dir = args.containing_dir

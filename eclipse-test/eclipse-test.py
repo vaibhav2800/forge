@@ -73,7 +73,8 @@ def parse_args():
             directory where to put resulting XML files,
             will be created (including parent dirs) if it doesn't exist.
             ''')
-    parser.add_argument('launchers_file',
+
+    parser.add_argument('--launchers-file', required=True,
             help='''
             JSON file containing the launchers in the format: ''' +
             json.dumps(sample_launchers_info) + '''.
@@ -88,7 +89,6 @@ def parse_args():
             The 'name' field is used for the XML file
             holding the JUnit results in the results_dir.
             ''')
-
     parser.add_argument('--branch', default='HEAD',
             help='CVS tag/branch to checkout, default %(default)s')
     parser.add_argument('--no-checkout', action='store_true',
