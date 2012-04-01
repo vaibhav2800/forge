@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<project name="Unblock" default="jar" basedir=".">
+
+	<property name="src.dir" value="src" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+
+	<!-- JAR file name -->
+	<property name="jar.file" value="${dist.dir}/unblock.jar" />
+
+	<!-- Target to create build directories before compile target -->
+	<target name="prepare">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- Target to clean everything -->
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<!-- Target to compile source code -->
+	<target name="compile" depends="prepare" description="Compile source code (build project).">
+		<javac srcdir="${src.dir}" encoding="UTF-8"
+			destdir="${build.dir}"
+			includeAntRuntime="false" />
+	</target>
+
+	<!-- Target to build the jar -->
+	<target name="jar" depends="compile" description="Build the JAR in dist/unblock.jar.">
+		<jar jarfile="${jar.file}">
+			<fileset dir="${build.dir}" />
+			<manifest>
+				<attribute name="Main-Class" value="com.github.mihaib.unblock.Unblock" />
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- Target to clean and then build the jar -->
+	<target name="rebuild" depends="clean, jar" description="Cleans, compiles and builds the JAR." />
+
+</project>

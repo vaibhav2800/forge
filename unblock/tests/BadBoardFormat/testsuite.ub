@@ -1,0 +1,50 @@
+# Empty (zero length) board file
+EmptyFile
+
+# Whitespace-only file
+NoBoard
+
+# Non-ASCII file
+NonASCII
+
+# Illegal character in board
+BadChar1
+
+# Space in board
+BadChar2
+
+# Not all lines have the same length
+JaggedBoard
+
+# No blocks on board
+NoBlocks
+
+# No target block
+NoTargetBlock
+
+# Vertical target block
+VerticalTargetBlock
+
+# Two target blocks on board
+TwoTargetBlocks
+
+# Block of length 1
+ShortBlock1
+
+# Block of length 1 in left column
+ShortBlock2
+
+# Block of length 1 in bottom right corner
+ShortBlock3
+
+# Adjacent top left
+AdjTopLeft
+
+# Adjacent bottom right
+AdjBotRight
+
+# Adjacent
+Adj1
+
+# Adjacent
+Adj2

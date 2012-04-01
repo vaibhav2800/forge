@@ -1,0 +1,1 @@
+com.github.mihaib.unblock.BoardFormatException: Invalid block with length 1 at line 7, column 10. Length must be at least 2.

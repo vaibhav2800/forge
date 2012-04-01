@@ -1,0 +1,40 @@
+Unblock game
+============
+Horizontal and vertical blocks are placed on a board (of size MxN cells).
+A block has length>=2, width=1 and can only move along its length
+(e.g. horizontal blocks can only be moved horizontally).
+Exactly 1 block (called the ‘target’ block) is special (e.g. different color):
+The game objective is to move the target block to the right edge of the board.
+The target block must be horizontal.
+
+
+Board representation as text (e.g. within a file)
+=================================================
+To represent a MxN board:
+ASCII text, M lines with N chars each (detailed below);
+lines may have trailing whitespace (spaces and tabs).
+Valid characters:
+'.' – empty cell
+'*' – target block (must be only one and horizontal)
+0-9, a-z, A-Z – blocks
+
+The same character may be used for several blocks
+if they are not adjacent (up, down, left, right).
+
+Valid board:	Invalid board:
+**..A.		**....
+.B..A.		....A.
+.B..A.		....A.
+.BAA..		...AA.
+
+Note: even though the ‘length>=2’ rule would disambiguate the second board
+(it has a vertical block of length 2 and a horizontal block of length 2),
+the ‘non-adjacency’ rule makes this representation invalid.
+
+When reading a board from a text stream,
+empty (or whitespace-only) lines may be present before the board.
+The end of the board is signaled by EOF or an empty (or whitespace-only) line.
+
+Lines should be terminated by '\n'.
+Implementations may also admit '\r\n', '\r' or a mix of the 3 in the same file,
+but only '\n' is guaranteed to work.
