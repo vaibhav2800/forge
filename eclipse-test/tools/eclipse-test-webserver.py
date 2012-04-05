@@ -25,68 +25,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_ecltest_dirs(N=50):
-    '''Gets N result dirs, in reverse lexicographical order.
-
-    Throws OSError.
-    '''
-    dirs = []
-    items = os.listdir(containing_dir)
-    items.sort(reverse=True)
-    for x in items:
-        if os.path.exists(os.path.join(containing_dir, x, 'ECLTEST_RESULT')):
-            dirs.append(x)
-            if len(dirs) >= N:
-                break
-
-    return dirs[:N]
-
-
-def get_ecltest_result(dirname):
-    '''Returns the contents of the ECLTEST_RESULT file.
-
-    Throws OSError, IOError.'''
-
-    filepath = os.path.join(containing_dir, dirname, 'ECLTEST_RESULT')
-    with open(filepath, encoding='utf-8') as f:
-        return f.read()
-
-
-def getTestSuitesOnly(dirname):
-    '''Returns a list of TestSuites without TestCases parsed from dirname.'''
-
-    suites = []
-    dirpath = os.path.join(containing_dir, dirname)
-    for path in os.listdir(dirpath):
-        if path != 'ECLTEST_RESULT':
-            try:
-                fullPath = os.path.join(dirpath, path)
-                suites.append(testParser.getTestSuiteOnly(fullPath))
-            except:
-                # handle empty documents
-                pass
-    suites.sort(key=lambda x: x.name)
-    return suites
-
-
-def getTestSuitesAndTestCases(dirname):
-    '''Returns a list of TestSuites with TestCases parsed from dirname.'''
-
-    suites = []
-    dirpath = os.path.join(containing_dir, dirname)
-    for path in os.listdir(dirpath):
-        if path == 'ECLTEST_RESULT':
-            continue
-        try:
-            fullPath = os.path.join(dirpath, path)
-            suites.append(testParser.getTestSuiteWithTestCases(fullPath))
-        except:
-            # handle empty documents
-            pass
-    suites.sort(key=lambda x: x.name)
-    return suites
-
-
 class EclTestHandler(http.server.BaseHTTPRequestHandler):
 
 
@@ -103,7 +41,7 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
             return
 
         path = self.path.strip('/')
-        for dirname in get_ecltest_dirs():
+        for dirname in util.testresults.get_ecltest_dirs(containing_dir):
             if dirname == path:
                 self.show_result_dir(dirname)
                 return
@@ -120,7 +58,7 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
                 util.fmt.get_html_start('Available Test Runs',
                     **colors).encode('utf-8'))
 
-        dirs = get_ecltest_dirs()
+        dirs = util.testresults.get_ecltest_dirs(containing_dir)
         if dirs:
             for d in dirs:
                 self.print_dir_link(d)
@@ -136,14 +74,16 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         descr_items = []
         totalT = totalE = totalF = 0
 
-        for suite in getTestSuitesOnly(dirname):
+        for suite in util.testresults.getTestSuitesOnly(
+                containing_dir, dirname, testParser):
             totalT += suite.nTests
             totalE += suite.nErr
             totalF += suite.nFail
 
             descr_items.append(util.fmt.get_suite_link(dirname, suite))
 
-        run_crashed = not get_ecltest_result(dirname).startswith('OK\n')
+        run_crashed = not util.testresults \
+                .get_ecltest_result(containing_dir, dirname).startswith('OK\n')
         allPassed = not (totalE or totalF or run_crashed)
         dir_link = util.fmt.get_dir_link(dirname, allPassed)
 
@@ -162,11 +102,13 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         self.print_dir_link(dirname)
         self.wfile.write(util.fmt.result_dir_start.encode('utf-8'))
 
-        ecltest_result = get_ecltest_result(dirname)
+        ecltest_result = \
+                util.testresults.get_ecltest_result(containing_dir, dirname)
         self.wfile.write(
                 util.fmt.get_ecltest_result(ecltest_result).encode('utf-8'))
 
-        for suite in getTestSuitesAndTestCases(dirname):
+        for suite in util.testresults.getTestSuitesAndTestCases(
+                containing_dir, dirname, testParser):
             self.print_suite(suite)
 
         self.wfile.write(util.fmt.html_end.encode('utf-8'))

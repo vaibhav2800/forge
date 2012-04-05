@@ -1,8 +1,71 @@
 import calendar
+import os
 import time
 import xml.dom.minidom
 import xml.dom.pulldom
 import xml.etree.ElementTree
+
+
+def get_ecltest_dirs(containing_dir, N=50):
+    '''Gets N result dirs, in reverse lexicographical order.
+
+    Throws OSError.
+    '''
+    dirs = []
+    items = os.listdir(containing_dir)
+    items.sort(reverse=True)
+    for x in items:
+        if os.path.exists(os.path.join(containing_dir, x, 'ECLTEST_RESULT')):
+            dirs.append(x)
+            if len(dirs) >= N:
+                break
+
+    return dirs[:N]
+
+
+def get_ecltest_result(containing_dir, dirname):
+    '''Returns the contents of the ECLTEST_RESULT file.
+
+    Throws OSError, IOError.'''
+
+    filepath = os.path.join(containing_dir, dirname, 'ECLTEST_RESULT')
+    with open(filepath, encoding='utf-8') as f:
+        return f.read()
+
+
+def getTestSuitesOnly(containing_dir, dirname, testParser):
+    '''Returns a list of TestSuites without TestCases parsed from dirname.'''
+
+    suites = []
+    dirpath = os.path.join(containing_dir, dirname)
+    for path in os.listdir(dirpath):
+        if path != 'ECLTEST_RESULT':
+            try:
+                fullPath = os.path.join(dirpath, path)
+                suites.append(testParser.getTestSuiteOnly(fullPath))
+            except:
+                # handle empty documents
+                pass
+    suites.sort(key=lambda x: x.name)
+    return suites
+
+
+def getTestSuitesAndTestCases(containing_dir, dirname, testParser):
+    '''Returns a list of TestSuites with TestCases parsed from dirname.'''
+
+    suites = []
+    dirpath = os.path.join(containing_dir, dirname)
+    for path in os.listdir(dirpath):
+        if path == 'ECLTEST_RESULT':
+            continue
+        try:
+            fullPath = os.path.join(dirpath, path)
+            suites.append(testParser.getTestSuiteWithTestCases(fullPath))
+        except:
+            # handle empty documents
+            pass
+    suites.sort(key=lambda x: x.name)
+    return suites
 
 
 class TestSuite():
