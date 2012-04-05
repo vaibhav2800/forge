@@ -31,11 +31,14 @@ def get_ecltest_dirs(N=50):
     Throws OSError.
     '''
     dirs = []
-    for x in os.listdir(containing_dir):
+    items = os.listdir(containing_dir)
+    items.sort(reverse=True)
+    for x in items:
         if os.path.exists(os.path.join(containing_dir, x, 'ECLTEST_RESULT')):
             dirs.append(x)
+            if len(dirs) >= N:
+                break
 
-    dirs.sort(reverse=True)
     return dirs[:N]
 
 
