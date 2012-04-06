@@ -17,6 +17,8 @@ sample_config = OrderedDict((
     ('pass', 'pa$$word'),
     ('from', 'email@domain.com'),
     ('to', 'email@domain.com'),
+    ('reply-to', 'someone@example.com'),
+    ('subject', 'Test Report'),
     ('website', 'http://website-url/'),
     ))
 
@@ -30,7 +32,8 @@ def parse_args():
             ''')
     parser.add_argument('--config', required=True,
             help='Email config file. It has the following format: ' +
-            json.dumps(sample_config) + '. "website" is optional.')
+            json.dumps(sample_config) + '''.
+            "reply-to", "subject" and "website" are optional.''')
     parser.add_argument('--latest', required=True,
             help='''
             Auto-generated file containing the latest test run sent by email.
@@ -63,19 +66,75 @@ def write_last_reported(latest_file, name):
         latest_config.write(f)
 
 
-def get_subject(latest_status, latest_suites):
+def get_subject(latest_name, latest_status, latest_suites):
+    subj = latest_name + ' - '
+    nBad = sum(s.nErr + s.nFail for s in latest_suites)
+    subj += (str(nBad) + ' FAILURES') if nBad else 'PASS'
+
     crashed = not latest_status.startswith('OK\n')
-    subj = '[tests]'
     if crashed:
         subj += ' (inconclusive)'
-
-    nBad = sum(s.nErr + s.nFail for s in latest_suites)
-    subj += (' ' + str(nBad) + ' FAIL') if nBad else ' PASS'
     return subj
 
 
-def get_msg_body(latest_status, latest_suites):
-    body = ''
+def get_new_fail_msg(latest_status, latest_suites,
+        prev_name, prev_status, prev_suites):
+    '''Returns 'new failures' message for email body, or empty string.'''
+
+    if not prev_status or not prev_suites:
+        return ''
+
+    latest_crashed = not latest_status.startswith('OK\n')
+    prev_crashed = not prev_status.startswith('OK\n')
+    if latest_crashed or prev_crashed:
+        return ''
+
+    prev_failures = {
+            s.name : {t.name for t in s.testcases if t.err or t.fail}
+            for s in prev_suites
+            }
+    latest_failures = {
+            s.name : {t.name for t in s.testcases if t.err or t.fail}
+            for s in latest_suites
+            }
+
+    new_failures = {}
+    for s, latest_tests in latest_failures.items():
+        new = latest_tests
+        if s in prev_failures:
+            new -= prev_failures[s]
+        if new:
+            new_failures[s] = new
+
+    if not new_failures:
+        return ''
+
+    msg = '\n'
+    msg += '*New failures* since ' + prev_name + ':\n'
+    for s, tests in new_failures.items():
+        msg += '\n' + s + ' (' + str(len(tests)) + '):\n'
+        for t in tests:
+            msg += t + '\n'
+    return msg + '\n\n'
+
+
+def get_msg_body(latest_status, latest_suites,
+        prev_name, prev_status, prev_suites):
+    body = '*Summary*:\n'
+    suitesFail = [s for s in latest_suites if s.nErr + s.nFail]
+    suitesPass = [s for s in latest_suites if not (s.nErr + s.nFail)]
+
+    for s in suitesFail:
+        body += '{name}: {bad} / {total} FAILED\n'.format(
+                name=s.name, bad=s.nErr+s.nFail, total=s.nTests)
+    for s in suitesPass:
+        body += '{name}: PASS\n'.format(name=s.name)
+    body += '\n'
+
+    body += get_new_fail_msg(latest_status, latest_suites,
+            prev_name, prev_status, prev_suites)
+
+    body += '*FULL DETAILS*\n\n'
     if not latest_status.startswith('OK\n'):
         body += 'Error running tests:\n'
     body += latest_status
@@ -83,7 +142,7 @@ def get_msg_body(latest_status, latest_suites):
         body += '\n\n' + suite.name
         nBad = suite.nErr + suite.nFail
         if not nBad:
-            body += ' PASS (' + str(suite.nTests) + ')\n'
+            body += ' (' + str(suite.nTests) + ') PASS\n'
         else:
             body += ' ' + str(nBad)+' / '+str(suite.nTests) + ' FAILED:\n\n'
             for t in suite.testcases:
@@ -93,15 +152,25 @@ def get_msg_body(latest_status, latest_suites):
     return body
 
 
-def send_email(latest_status, latest_suites, prev_suites, config_file):
+def send_email(latest_name, latest_status, latest_suites,
+        prev_name, prev_status, prev_suites, config_file):
     with open(config_file, encoding='utf-8') as f:
         config = json.load(f)
 
     msg = email.message.Message()
     msg.add_header('From', config['from'])
     msg.add_header('To', config['to'])
-    msg.add_header('Subject', get_subject(latest_status, latest_suites))
-    body = get_msg_body(latest_status, latest_suites)
+
+    if 'reply-to' in config:
+        msg.add_header('Reply-To', config['reply-to'])
+
+    subject = get_subject(latest_name, latest_status, latest_suites)
+    if 'subject' in config:
+        subject = config['subject'] + ' ' + subject
+    msg.add_header('Subject', subject)
+
+    body = get_msg_body(latest_status, latest_suites,
+            prev_name, prev_status, prev_suites)
     if 'website' in config:
         body = config['website'] + '\n\n' + body
     msg.set_payload(body)
@@ -122,8 +191,11 @@ if __name__ == '__main__':
     testParser = util.testresults.ETreeTestParser()
 
     prev_name = get_last_reported(args.latest)
+    prev_status = None
     prev_suites = None
     try:
+        prev_status = util.testresults.get_ecltest_result(
+                args.containing_dir, prev_name)
         prev_suites = util.testresults.getTestSuitesAndTestCases(
                 args.containing_dir, prev_name, testParser)
     except:
@@ -134,14 +206,15 @@ if __name__ == '__main__':
         exit()
     latest_name = dirs[0]
 
-    latest_suites = util.testresults.getTestSuitesAndTestCases(
-            args.containing_dir, latest_name, testParser)
     latest_status = util.testresults.get_ecltest_result(
             args.containing_dir, latest_name)
+    latest_suites = util.testresults.getTestSuitesAndTestCases(
+            args.containing_dir, latest_name, testParser)
 
     if prev_name or args.email_on_first_run:
         if latest_name != prev_name:
-            send_email(latest_status, latest_suites, prev_suites, args.config)
+            send_email(latest_name, latest_status, latest_suites,
+                    prev_name, prev_status, prev_suites, args.config)
             write_last_reported(args.latest, latest_name)
     else:
         write_last_reported(args.latest, latest_name)
