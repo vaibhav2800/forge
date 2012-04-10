@@ -67,9 +67,9 @@ def write_last_reported(latest_file, name):
 
 
 def get_subject(latest_name, latest_status, latest_suites):
-    subj = latest_name + ' - '
     nBad = sum(s.nErr + s.nFail for s in latest_suites)
-    subj += (str(nBad) + ' FAILURES') if nBad else 'PASS'
+    subj = (str(nBad) + ' FAILURES') if nBad else 'PASS'
+    subj += ' - ' + latest_name
 
     crashed = not latest_status.startswith('OK\n')
     if crashed:
@@ -136,7 +136,8 @@ def get_msg_body(latest_status, latest_suites,
 
     body += '*FULL DETAILS*\n\n'
     if not latest_status.startswith('OK\n'):
-        body += 'Error running tests:\n'
+        body += '*Inconclusive results*, '
+        body += 'there was an error running the tests:\n'
     body += latest_status
     for suite in latest_suites:
         body += '\n\n' + suite.name

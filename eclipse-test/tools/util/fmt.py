@@ -71,10 +71,8 @@ html_end = '''
         '''
 
 
-suite_link_templ = Template('''
-        <a class="$class" href="/$dirname#$suitename">$suitename
-            ($N)</a>
-        ''')
+suite_link_templ = Template(
+        '<a class="$class" href="/$dirname#$suitename">$suitename ($nums)</a>')
 
 
 def get_suite_link(dirname, suite):
@@ -85,7 +83,7 @@ def get_suite_link(dirname, suite):
         'class': 'dir-suite-failed' if nBad else 'dir-suite-passed',
         'dirname': html.escape(dirname),
         'suitename': html.escape(suite.name),
-        'N': nBad if nBad else suite.nTests
+        'nums': (str(nBad)+' / '+str(suite.nTests)) if nBad else suite.nTests
         })
 
 

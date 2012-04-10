@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import html
 import http.server
 
 import util.testresults
