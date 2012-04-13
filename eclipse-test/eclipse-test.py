@@ -100,6 +100,8 @@ def parse_args():
             help='Run %(metavar)s launchers in parallel.')
     parser.add_argument('--random', action='store_true',
             help='Run launchers in random order')
+    parser.add_argument('--run-after-checkout', metavar='COMMAND',
+            help='Run %(metavar)s after checkout, before build')
 
     return parser.parse_args()
 
@@ -199,10 +201,10 @@ def printRunTime(f):
 
 
 if __name__ == '__main__':
+    args = parse_args()
     if not singleinstance(SINGLE_INSTANCE_PORT):
         print('Another instance is currently running', file=sys.stderr)
         sys.exit(1)
-    args = parse_args()
     os.makedirs(args.results_dir, exist_ok = False)
     killed_suites = set()
 
@@ -212,6 +214,9 @@ if __name__ == '__main__':
                 os.path.join(program_dir, 'cvs-checkout.py'),
                 args.workspace, args.modules_file,
                 '--branch', args.branch])
+
+        if args.run_after_checkout:
+            subprocess.check_call([args.run_after_checkout])
 
         if not args.no_build:
             subprocess.check_call([
