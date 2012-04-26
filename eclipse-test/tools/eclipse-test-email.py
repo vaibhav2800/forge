@@ -128,7 +128,8 @@ def get_msg_body(latest_status, latest_suites,
         body += '{name}: {bad} / {total} FAILED\n'.format(
                 name=s.name, bad=s.nErr+s.nFail, total=s.nTests)
     for s in suitesPass:
-        body += '{name}: PASS\n'.format(name=s.name)
+        body += '{name}: {total} PASS\n'.format(
+                name=s.name, total=s.nTests)
     body += '\n'
 
     body += get_new_fail_msg(latest_status, latest_suites,

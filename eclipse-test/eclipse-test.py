@@ -200,6 +200,10 @@ def printRunTime(f):
             file=f)
 
 
+def printArgs(f, args):
+    print(args, file=f)
+
+
 if __name__ == '__main__':
     args = parse_args()
     if not singleinstance(SINGLE_INSTANCE_PORT):
@@ -245,6 +249,7 @@ if __name__ == '__main__':
                 encoding='utf-8', mode='w') as f:
             print('CRASHED', file=f)
             printRunTime(f)
+            printArgs(f, args)
             traceback.print_exc(file=f)
     else:
         with open(os.path.join(args.results_dir, 'ECLTEST_RESULT'),
@@ -253,6 +258,8 @@ if __name__ == '__main__':
                 print('Killed suites:', file=f)
                 print(killed_suites, file=f)
                 printRunTime(f)
+                printArgs(f, args)
             else:
                 print('OK', file=f)
                 printRunTime(f)
+                printArgs(f, args)
