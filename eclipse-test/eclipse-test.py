@@ -266,6 +266,7 @@ def printKilledSuites(f, killed_suites, launchers_info):
             timeout = 'timeout not found'
         print(s, timeout, sep=': ', file=f)
 
+
 if __name__ == '__main__':
     args = parse_args()
     if not singleinstance(SINGLE_INSTANCE_PORT):
