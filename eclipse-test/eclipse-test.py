@@ -256,7 +256,7 @@ def printKilledSuites(f, killed_suites, launchers_info):
     Args: f - file, killed_suites - set(suite_name), launchers_info.
     '''
 
-    print('The following test suites timed out:', file=f)
+    print('The following test suites TIMED OUT:', file=f)
     for s in killed_suites:
         if s in launchers_info:
             timeout = humansize(
