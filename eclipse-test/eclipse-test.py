@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+from collections import deque
 from collections import OrderedDict
 import datetime
 import json
@@ -208,6 +209,63 @@ def printArgsIfRequested(f, args):
         print(args, file=f)
 
 
+def humansize(n, sizes, beforeUnit='', sep=' ',
+        noLeadZero=True, noTrailZero=True):
+    '''humansize(n, sizes, beforeUnit='', sep=' ',
+    noLeadZero=True, noTrailZero=True) -> str
+
+    sizes = OrderedDict((('s', 1), ('m', 60), ('h', 60)))
+    Can omit leading and trailing units that are zero.
+    Returns: 1h 5m 20s
+    sep - between 1h and 5m
+    beforeUnit - before '1' and 'h'
+    '''
+
+    d = deque()
+    for unit, size in sizes.items():
+        if len(d):
+            prev_unit, x = d.popleft()
+            d.appendleft((prev_unit, x % size))
+        else:
+            x = n
+        d.appendleft((unit, x // size))
+
+    if noLeadZero:
+        while len(d):
+            unit, size = d.popleft()
+            if size:
+                d.appendleft((unit, size))
+                break
+
+    if noTrailZero:
+        while len(d):
+            unit, size = d.pop()
+            if size:
+                d.append((unit, size))
+                break
+
+    if not d:
+        return '0'
+
+    return sep.join([str(size) + beforeUnit + unit for unit, size in d])
+
+
+def printKilledSuites(f, killed_suites, launchers_info):
+    '''Prints a status line (other than 'OK\n') and lists the killed suites.
+
+    Args: f - file, killed_suites - set(suite_name), launchers_info.
+    '''
+
+    print('The following test suites timed out:', file=f)
+    for s in killed_suites:
+        if s in launchers_info:
+            timeout = humansize(
+                    launchers_info[s]['timeout'],
+                    OrderedDict((('s', 1), ('m', 60), ('h', 60))))
+        else:
+            timeout = 'timeout not found'
+        print(s, timeout, sep=': ', file=f)
+
 if __name__ == '__main__':
     args = parse_args()
     if not singleinstance(SINGLE_INSTANCE_PORT):
@@ -259,11 +317,8 @@ if __name__ == '__main__':
         with open(os.path.join(args.results_dir, 'ECLTEST_RESULT'),
                 encoding='utf-8', mode='w') as f:
             if killed_suites:
-                print('Killed suites:', file=f)
-                print(killed_suites, file=f)
-                printRunTime(f)
-                printArgsIfRequested(f, args)
+                printKilledSuites(f, killed_suites, launchers_info)
             else:
                 print('OK', file=f)
-                printRunTime(f)
-                printArgsIfRequested(f, args)
+            printRunTime(f)
+            printArgsIfRequested(f, args)
