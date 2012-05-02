@@ -102,6 +102,9 @@ def parse_args():
             help='Run launchers in random order')
     parser.add_argument('--run-after-checkout', metavar='COMMAND',
             help='Run %(metavar)s after checkout, before build')
+    parser.add_argument('--print-args', action='store_true',
+            help='''Print the arguments this program was invoked with
+            to the ECLTEST_RESULT file. Can be used for debugging.''')
 
     return parser.parse_args()
 
@@ -200,8 +203,9 @@ def printRunTime(f):
             file=f)
 
 
-def printArgs(f, args):
-    print(args, file=f)
+def printArgsIfRequested(f, args):
+    if args.print_args:
+        print(args, file=f)
 
 
 if __name__ == '__main__':
@@ -249,7 +253,7 @@ if __name__ == '__main__':
                 encoding='utf-8', mode='w') as f:
             print('CRASHED', file=f)
             printRunTime(f)
-            printArgs(f, args)
+            printArgsIfRequested(f, args)
             traceback.print_exc(file=f)
     else:
         with open(os.path.join(args.results_dir, 'ECLTEST_RESULT'),
@@ -258,8 +262,8 @@ if __name__ == '__main__':
                 print('Killed suites:', file=f)
                 print(killed_suites, file=f)
                 printRunTime(f)
-                printArgs(f, args)
+                printArgsIfRequested(f, args)
             else:
                 print('OK', file=f)
                 printRunTime(f)
-                printArgs(f, args)
+                printArgsIfRequested(f, args)
