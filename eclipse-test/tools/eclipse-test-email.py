@@ -42,26 +42,35 @@ def parse_args():
     parser.add_argument('--email-on-first-run', action='store_true',
             help='Send email even if latest_file does not exist')
 
+    parser.add_argument('--only-if-new-failures', action='store_true',
+            help='''Send email only if there are new failures since the last
+            email. This flag has no effect if --email-on-first-run is given.
+            ''')
+
     return parser.parse_args()
 
 
-def get_last_reported(latest_file):
-    '''Returns the name of the latest test run reported, or None.'''
+def get_last_names(latest_file):
+    '''Returns names (latest test run reported, latest test run examined).'''
     latest_config = configparser.ConfigParser()
     latest_config.read(args.latest)
     if 'General' not in latest_config:
         latest_config['General'] = {}
-    return latest_config['General'].get('last_reported')
+    section = latest_config['General']
+    return section.get('last_reported'), section.get('last_examined')
 
 
-def write_last_reported(latest_file, name):
-    '''Writes name to file as the last reported.
+def write_last_names(latest_file, last_reported, last_examined):
+    '''Writes last_reported and last_examined name to file.
 
     May throw exceptions.
     '''
 
     latest_config = configparser.ConfigParser()
-    latest_config['General'] = {'last_reported': name}
+    latest_config['General'] = {
+            'last_reported': last_reported,
+            'last_examined': last_examined
+            }
     with open(latest_file, 'w', encoding='utf-8') as f:
         latest_config.write(f)
 
@@ -181,7 +190,7 @@ def send_email(latest_name, latest_status, latest_suites,
     c.body_encoding = None
     msg.set_charset(c)
 
-    smtp_func = smtplib.SMTP_SSL if config['ssl'] else emtplib.SMTP
+    smtp_func = smtplib.SMTP_SSL if config['ssl'] else smtplib.SMTP
     s = smtp_func(config['server'], config['port'])
     s.login(config['user'], config['pass'])
     s.sendmail(config['from'], config['to'], msg.as_string().encode('utf-8'))
@@ -192,31 +201,44 @@ if __name__ == '__main__':
 
     testParser = util.testresults.ETreeTestParser()
 
-    prev_name = get_last_reported(args.latest)
-    prev_status = None
-    prev_suites = None
-    try:
-        prev_status = util.testresults.get_ecltest_result(
-                args.containing_dir, prev_name)
-        prev_suites = util.testresults.getTestSuitesAndTestCases(
-                args.containing_dir, prev_name, testParser)
-    except:
-        pass
+    prev_name, last_examined = get_last_names(args.latest)
 
     dirs = util.testresults.get_ecltest_dirs(args.containing_dir, 1)
     if not dirs:
         exit()
     latest_name = dirs[0]
 
-    latest_status = util.testresults.get_ecltest_result(
-            args.containing_dir, latest_name)
-    latest_suites = util.testresults.getTestSuitesAndTestCases(
-            args.containing_dir, latest_name, testParser)
-
     if prev_name or args.email_on_first_run:
-        if latest_name != prev_name:
-            send_email(latest_name, latest_status, latest_suites,
-                    prev_name, prev_status, prev_suites, args.config)
-            write_last_reported(args.latest, latest_name)
+        if latest_name == prev_name:
+            exit()
+
+        if (latest_name == last_examined and args.only_if_new_failures
+                and not args.email_on_first_run):
+            exit()
+
+        prev_status = None
+        prev_suites = None
+        try:
+            prev_status = util.testresults.get_ecltest_result(
+                    args.containing_dir, prev_name)
+            prev_suites = util.testresults.getTestSuitesAndTestCases(
+                    args.containing_dir, prev_name, testParser)
+        except:
+            pass
+
+        latest_status = util.testresults.get_ecltest_result(
+                args.containing_dir, latest_name)
+        latest_suites = util.testresults.getTestSuitesAndTestCases(
+                args.containing_dir, latest_name, testParser)
+
+        if args.only_if_new_failures and not args.email_on_first_run:
+            if not get_new_fail_msg(latest_status, latest_suites,
+                    prev_name, prev_status, prev_suites):
+                write_last_names(args.latest, prev_name, latest_name)
+                exit()
+
+        send_email(latest_name, latest_status, latest_suites,
+                prev_name, prev_status, prev_suites, args.config)
+        write_last_names(args.latest, latest_name, latest_name)
     else:
-        write_last_reported(args.latest, latest_name)
+        write_last_names(args.latest, latest_name, latest_name)
