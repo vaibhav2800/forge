@@ -319,6 +319,7 @@ if __name__ == '__main__':
                 encoding='utf-8', mode='w') as f:
             if killed_suites:
                 printKilledSuites(f, killed_suites, launchers_info)
+                print(file=f)
             else:
                 print('OK', file=f)
             printRunTime(f)

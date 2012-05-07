@@ -10,6 +10,7 @@ html_start_templ = Template('''
             <meta charset="UTF-8"/>
             <title>$title</title>
             <style type="text/css">
+                h3.title { text-align: center; color: $color_title; }
                 a.dir-suite-passed { color: $color_pass; }
                 a.dir-suite-failed { color: $color_fail; }
 
@@ -49,15 +50,18 @@ html_start_templ = Template('''
                 x.nextElementSibling.hidden = !x.nextElementSibling.hidden;
             }
         </script>
+
+        <h3 class="title">$title</h3>
         ''')
 
 
-def get_html_start(title, color_pass, color_fail, color_detail):
+def get_html_start(title, color_pass, color_fail, color_detail, color_title):
     return html_start_templ.substitute({
         'title': html.escape(title),
         'color_pass': color_pass,
         'color_fail': color_fail,
         'color_detail': color_detail,
+        'color_title': color_title,
         })
 
 

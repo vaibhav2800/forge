@@ -23,6 +23,10 @@ def parse_args():
             help='HTML color name for failures, default %(default)s.')
     parser.add_argument('--color-detail', default='Crimson',
             help='HTML color name for failure details, default %(default)s.')
+    parser.add_argument('--color-title', default='black',
+            help='HTML color name for page title, default %(default)s.')
+    parser.add_argument('--title', default='Eclipse-Test Results',
+            help='Title for HTML pages, default %(default)s.')
     return parser.parse_args()
 
 
@@ -56,7 +60,7 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write('\r\n'.encode('utf-8'))
 
         self.wfile.write(
-                util.fmt.get_html_start('Available Test Runs',
+                util.fmt.get_html_start(title,
                     **colors).encode('utf-8'))
 
         dirs = util.testresults.get_ecltest_dirs(containing_dir)
@@ -97,8 +101,8 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.wfile.write('\r\n'.encode('utf-8'))
 
-        self.wfile.write(
-                util.fmt.get_html_start(dirname, **colors).encode('utf-8'))
+        self.wfile.write(util.fmt.get_html_start(
+            dirname + ' (' + title + ')', **colors).encode('utf-8'))
         self.wfile.write('<p><a href="/">← Back Home</a></p>'.encode('utf-8'))
         self.print_dir_link(dirname)
         self.wfile.write(util.fmt.result_dir_start.encode('utf-8'))
@@ -133,10 +137,14 @@ if __name__ == '__main__':
             'color_pass': args.color_pass,
             'color_fail': args.color_fail,
             'color_detail': args.color_detail,
+            'color_title': args.color_title,
             }
 
     global containing_dir
     containing_dir = args.containing_dir
+
+    global title
+    title = args.title
 
     global testParser
     testParser = util.testresults.ETreeTestParser()
