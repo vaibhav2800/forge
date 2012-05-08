@@ -6,6 +6,7 @@ import configparser
 import email.message
 import json
 import smtplib
+import sys
 import util.testresults
 
 
@@ -40,12 +41,13 @@ def parse_args():
             ''')
 
     parser.add_argument('--email-on-first-run', action='store_true',
-            help='Send email even if latest_file does not exist')
+            help='''Send email even if latest_file doesn't mention
+            a previous test run.''')
 
     parser.add_argument('--only-if-new-failures', action='store_true',
             help='''Send email only if there are new failures since the last
-            email. This flag has no effect if --email-on-first-run is given.
-            ''')
+            email. This flag has no effect if latest_file doesn't contain
+            a previous test run.''')
 
     return parser.parse_args()
 
@@ -205,16 +207,19 @@ if __name__ == '__main__':
 
     dirs = util.testresults.get_ecltest_dirs(args.containing_dir, 1)
     if not dirs:
-        exit()
+        print('No test results found in', args.containing_dir)
+        sys.exit()
     latest_name = dirs[0]
 
     if prev_name or args.email_on_first_run:
         if latest_name == prev_name:
-            exit()
+            print('Latest test run', latest_name, 'has already been reported')
+            sys.exit()
 
-        if (latest_name == last_examined and args.only_if_new_failures
-                and not args.email_on_first_run):
-            exit()
+        if latest_name == last_examined and args.only_if_new_failures:
+            print('Latest test run', latest_name, 'has already been examined',
+                    'and --only-if-new-failures flag given')
+            sys.exit()
 
         prev_status = None
         prev_suites = None
@@ -231,14 +236,21 @@ if __name__ == '__main__':
         latest_suites = util.testresults.getTestSuitesAndTestCases(
                 args.containing_dir, latest_name, testParser)
 
-        if args.only_if_new_failures and not args.email_on_first_run:
+        if prev_status and prev_suites and args.only_if_new_failures:
             if not get_new_fail_msg(latest_status, latest_suites,
                     prev_name, prev_status, prev_suites):
+                print('No new failures in', latest_name, 'since', prev_name,
+                        'and --only-if-new-failures flag given')
                 write_last_names(args.latest, prev_name, latest_name)
-                exit()
+                sys.exit()
 
+        print('Emailing test run', latest_name)
         send_email(latest_name, latest_status, latest_suites,
                 prev_name, prev_status, prev_suites, args.config)
-        write_last_names(args.latest, latest_name, latest_name)
     else:
-        write_last_names(args.latest, latest_name, latest_name)
+        print('File', args.latest, 'does not show the last test run emailed.',
+                'Looks like we\'re running for the first time.')
+        print('saving', latest_name, 'in file', args.latest,
+                'but not sending email.')
+
+    write_last_names(args.latest, latest_name, latest_name)
