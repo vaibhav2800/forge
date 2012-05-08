@@ -45,11 +45,15 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
             self.send_dir_list()
             return
 
-        path = self.path.strip('/')
-        for dirname in util.testresults.get_ecltest_dirs(containing_dir):
-            if dirname == path:
-                self.show_result_dir(dirname)
-                return
+        try:
+            path = self.path.strip('/')
+            for dirname in util.testresults.get_ecltest_dirs(containing_dir):
+                if dirname == path:
+                    self.show_result_dir(dirname)
+                    return
+        except OSError:
+            # get_ecltest_dirs throws OSError if containing_dir doesn't exist
+            pass
 
         self.send_not_found()
 
@@ -60,10 +64,14 @@ class EclTestHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write('\r\n'.encode('utf-8'))
 
         self.wfile.write(
-                util.fmt.get_html_start(title,
-                    **colors).encode('utf-8'))
+                util.fmt.get_html_start(title, **colors).encode('utf-8'))
 
-        dirs = util.testresults.get_ecltest_dirs(containing_dir)
+        dirs = None
+        try:
+            dirs = util.testresults.get_ecltest_dirs(containing_dir)
+        except OSError:
+            # get_ecltest_dirs throws OSError if containing_dir doesn't exist
+            pass
         if dirs:
             for d in dirs:
                 self.print_dir_link(d)
