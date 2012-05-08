@@ -17,13 +17,13 @@ def parse_args():
             eclipse-test.py, one for each test run.
             ''')
     parser.add_argument('port', type=int, help='port to listen on')
-    parser.add_argument('--color-pass', default='green',
+    parser.add_argument('--color-pass', metavar='COLOR', default='green',
             help='HTML color name for passes, default %(default)s.')
-    parser.add_argument('--color-fail', default='red',
+    parser.add_argument('--color-fail', metavar='COLOR', default='red',
             help='HTML color name for failures, default %(default)s.')
-    parser.add_argument('--color-detail', default='Crimson',
+    parser.add_argument('--color-detail', metavar='COLOR', default='Crimson',
             help='HTML color name for failure details, default %(default)s.')
-    parser.add_argument('--color-title', default='black',
+    parser.add_argument('--color-title', metavar='COLOR', default='black',
             help='HTML color name for page title, default %(default)s.')
     parser.add_argument('--title', default='Eclipse-Test Results',
             help='Title for HTML pages, default %(default)s.')
