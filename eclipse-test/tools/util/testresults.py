@@ -68,6 +68,26 @@ def getTestSuitesAndTestCases(containing_dir, dirname, testParser):
     return suites
 
 
+def _getGlobalProblemName(N):
+    '''Returns a name for the N-th global <failure> or <error> message.
+
+    If @BeforeClass throws an Exception, the XML contains a <failure> tag
+    without a parent <testcase> tag.
+    If extending TestSuite and throwing an exception from the static suite()
+    method, the XML needs no special attention: the <failure> tag has a parent
+    <testcase> tag called 'initializationError'.
+
+    Use this function to treat each global <failure> or <error> message
+    like it had a parent <testcase> with the name returned by this function.
+    '''
+
+    # don't append a suffix for the first failure (we only expect to find 1)
+    if N == 1:
+        return '!initializationError'
+    else:
+        return '!initializationError.' + str(N)
+
+
 class TestSuite():
     '''A completed test suite having several test cases'''
 
@@ -188,29 +208,52 @@ class MinidomTestParser(TestParser):
         e = doc.documentElement
 
         testcases = []
+        globalProblems = 0
         for c in e.childNodes:
-            if c.nodeType != c.ELEMENT_NODE or c.tagName != 'testcase':
+            if c.nodeType != c.ELEMENT_NODE:
                 continue
 
+            name = ''
+            time = '0'
             err_msg = fail_msg = None
-            for nested in c.childNodes:
-                if nested.nodeType != nested.ELEMENT_NODE:
-                    continue
-                if nested.tagName == 'error':
-                    for x in nested.childNodes:
-                        if x.nodeType == x.TEXT_NODE:
-                            err_msg = x.nodeValue
-                    break
-                if nested.tagName == 'failure':
-                    for x in nested.childNodes:
-                        if x.nodeType == x.TEXT_NODE:
-                            fail_msg = x.nodeValue
-                    break
 
-            testcases.append({'name': c.getAttribute('name'),
-                'time': c.getAttribute('time'),
+            if c.tagName == 'testcase':
+                name = c.getAttribute('name')
+                time = c.getAttribute('time')
+                for nested in c.childNodes:
+                    if nested.nodeType != nested.ELEMENT_NODE:
+                        continue
+                    if nested.tagName == 'error':
+                        for x in nested.childNodes:
+                            if x.nodeType == x.TEXT_NODE:
+                                err_msg = x.nodeValue
+                                break
+                        break
+                    if nested.tagName == 'failure':
+                        for x in nested.childNodes:
+                            if x.nodeType == x.TEXT_NODE:
+                                fail_msg = x.nodeValue
+                                break
+                        break
+            elif c.tagName == 'failure' or c.tagName == 'error':
+                globalProblems += 1
+                name = _getGlobalProblemName(globalProblems)
+                for x in c.childNodes:
+                    if x.nodeType == x.TEXT_NODE:
+                        if c.tagName == 'failure':
+                            fail_msg = x.nodeValue
+                        else:
+                            err_msg = x.nodeValue
+                        break
+            else:
+                continue
+
+            testcases.append({
+                'name': name,
+                'time': time,
                 'errorMsg': err_msg,
-                'failureMsg': fail_msg})
+                'failureMsg': fail_msg
+                })
 
         return {'name': e.getAttribute('name'),
                 'tests': e.getAttribute('tests'),
@@ -253,23 +296,36 @@ class ETreeTestParser(TestParser):
         r = et.getroot()
 
         testcases = []
+        globalProblems = 0
         for c in list(r):
-            if c.tag != 'testcase':
-                continue
-
+            name = ''
+            time = '0'
             errorMsg = failureMsg = None
 
-            for x in list(c):
-                if x.tag == 'error':
-                    errorMsg = x.text
-                    break
-                if x.tag == 'failure':
-                    failureMsg = x.text
-                    break
+            if c.tag == 'testcase':
+                name = c.attrib['name']
+                time = c.attrib['time']
+
+                for x in list(c):
+                    if x.tag == 'error':
+                        errorMsg = x.text
+                        break
+                    if x.tag == 'failure':
+                        failureMsg = x.text
+                        break
+            elif c.tag == 'failure' or c.tag == 'error':
+                globalProblems += 1
+                name = _getGlobalProblemName(globalProblems)
+                if c.tag == 'failure':
+                    failureMsg = c.text
+                else:
+                    errorMsg = c.text
+            else:
+                continue
 
             testcases.append({
-                'name': c.attrib['name'],
-                'time': c.attrib['time'],
+                'name': name,
+                'time': time,
                 'errorMsg': errorMsg,
                 'failureMsg': failureMsg
                 })
