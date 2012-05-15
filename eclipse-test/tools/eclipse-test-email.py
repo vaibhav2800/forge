@@ -80,11 +80,12 @@ def write_last_names(latest_file, last_reported, last_examined):
 def get_subject(latest_name, latest_status, latest_suites):
     nBad = sum(s.nErr + s.nFail for s in latest_suites)
     subj = (str(nBad) + ' FAILURES') if nBad else 'PASS'
-    subj += ' - ' + latest_name
 
     crashed = not latest_status.startswith('OK\n')
     if crashed:
         subj += ' (inconclusive)'
+
+    subj += ' - ' + latest_name
     return subj
 
 
