@@ -105,16 +105,20 @@ def get_new_fail_msg(latest_status, latest_suites,
             s.name : {t.name for t in s.testcases if t.err or t.fail}
             for s in prev_suites
             }
-    latest_failures = {
-            s.name : {t.name for t in s.testcases if t.err or t.fail}
+    latest_failures = OrderedDict(
+            (s.name,
+                OrderedDict((t.name, True) for t in s.testcases
+                    if t.err or t.fail)
+                )
             for s in latest_suites
-            }
+            )
 
-    new_failures = {}
+    new_failures = OrderedDict()
     for s, latest_tests in latest_failures.items():
         new = latest_tests
         if s in prev_failures:
-            new -= prev_failures[s]
+            for x in prev_failures[s]:
+                new.pop(x, None)
         if new:
             new_failures[s] = new
 
