@@ -54,7 +54,8 @@ sample_launchers_info = OrderedDict((
             ))),
         ('another-suite', OrderedDict((
             ('bin', 'path/to/bin2'),
-            ('timeout', 600)
+            ('timeout', 600),
+            ('alone', True),
             ))),
         ))
 
@@ -81,7 +82,9 @@ def parse_args():
             json.dumps(sample_launchers_info) + '''.
             The 'bin' field points to the executable file starting each suite,
             'timeout' is the number of seconds to let each launcher run
-            before killing it.
+            before killing it, 'alone' is optional, used only if --parallel
+            is given, it indicates suites which must run sequentially after all
+            the parallel ones have finished.
             The executable will have the following variables added to its
             environment:
             ECLTEST_ECLIPSE_BIN (the eclipse_bin arg above),
@@ -257,7 +260,7 @@ def printKilledSuites(f, killed_suites, launchers_info):
     '''
 
     print('The following test suites TIMED OUT:', file=f)
-    for s in killed_suites:
+    for s in sorted(killed_suites):
         if s in launchers_info:
             timeout = humansize(
                     launchers_info[s]['timeout'],
@@ -302,9 +305,12 @@ if __name__ == '__main__':
             random.shuffle(shuffled_launchers)
             launchers_info = OrderedDict(shuffled_launchers)
 
-        port = 50000
         if args.parallel:
-            killed_suites = run_suites_in_parallel(args, launchers_info)
+            killed_suites = run_suites_in_parallel(args, OrderedDict(
+                (k,v) for k,v in launchers_info.items() if not v.get('alone')))
+
+            killed_suites.update(run_suites_sequentially(args, OrderedDict(
+                (k,v) for k,v in launchers_info.items() if v.get('alone'))))
         else:
             killed_suites = run_suites_sequentially(args, launchers_info)
     except:

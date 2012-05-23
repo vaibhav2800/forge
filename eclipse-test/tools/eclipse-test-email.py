@@ -79,7 +79,9 @@ def write_last_names(latest_file, last_reported, last_examined):
 
 def get_subject(latest_name, latest_status, latest_suites):
     nBad = sum(s.nErr + s.nFail for s in latest_suites)
-    subj = (str(nBad) + ' FAILURES') if nBad else 'PASS'
+    nTests = sum(s.nTests for s in latest_suites)
+    subj = ('{bad} / {total} FAIL' if nBad else '{total} PASS').format(
+            bad = nBad, total = nTests)
 
     crashed = not latest_status.startswith('OK\n')
     if crashed:
