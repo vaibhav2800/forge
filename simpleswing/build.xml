@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+
+<project name="SimpleSwing" default="jar" basedir=".">
+
+	<property name="src.dir" value="src" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+	<property name="doc.dir" value="doc" />
+
+	<!-- JAR file name -->
+	<property name="jar.file" value="${dist.dir}/simpleswing.jar" />
+
+	<!-- Target to create build directories before compile target -->
+	<target name="prepare">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- Target to clean everything -->
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${doc.dir}" />
+	</target>
+
+	<!-- Target to compile source code -->
+	<target name="compile" depends="prepare" description="Compile source code (build project).">
+		<javac srcdir="${src.dir}" encoding="UTF-8"
+			destdir="${build.dir}"
+			includeAntRuntime="false" />
+	</target>
+
+	<!-- Target to build the jar -->
+	<target name="jar" depends="compile" description="Build the JAR in dist/ .">
+		<jar jarfile="${jar.file}" basedir="${build.dir}" />
+	</target>
+
+	<!-- Target to generate Java documentation -->
+	<target name="doc" description="Generate javadoc.">
+		<javadoc sourcepath="${src.dir}" encoding="UTF-8" destdir="${doc.dir}" />
+	</target>
+
+	<!-- Target to clean and then build the jar and documentation -->
+	<target name="rebuild-all" depends="clean, jar, doc" description="Cleans, compiles, builds the JAR and generates the documentation." />
+
+</project>
