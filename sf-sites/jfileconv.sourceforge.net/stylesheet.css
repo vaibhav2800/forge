@@ -1,0 +1,28 @@
+@charset "utf-8";
+
+img {
+	border: none;
+}
+
+img.left {
+	float: left;
+	margin: 8px;
+}
+
+a {
+	color: #039;
+	font-weight: bold;
+}
+
+a:visited {
+	color: #309;
+}
+
+pre {
+	background-color: #f6f6f6;
+	padding: 8px;
+	overflow: auto;
+
+	border-style: solid;
+	border-width: thin;
+}

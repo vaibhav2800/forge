@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+<title>JEncConv Encoding Converter</title>
+</head>
+
+<body>
+
+<h1>JEncConv Encoding Converter</h1>
+
+<p>
+<img class="left" alt="logo" width="64" height="64"
+src="logos/JEncConv-64.png" />
+JEncConv converts the encoding of text files, e.g. subtitles.
+If you don't know the original encoding,
+use the program's <em>preview</em> function
+with different encodings (e.g. Latin1, windows-1250).
+It can also <em>detect</em> possible encodings.
+</p>
+
+<p>
+If errors are found during decoding or encoding,
+several behaviors are available for each step:
+failing, inserting a custom string or ignoring the error altogether
+(details <a href="#ErrorHandling">below</a>).
+</p>
+
+<p>
+It can also be used from the command line (to convert many files at once).
+Run it with <code>--help</code> to see a list of options.
+</p>
+
+<p>
+You can use <em>plugins</em> to change the text.
+Some are included in the program, and writing new ones in Java is easy
+(see the <a href="plugins-tutorial.html">Plugins Tutorial</a> page).
+</p>
+
+
+<h2>Download</h2>
+
+<p>
+<a href="http://sourceforge.net/projects/jencconv/">Download</a>
+the latest version.
+Unzip it.
+Run the program by double-clicking the <code>.jar</code>
+or by typing <code>java -jar jencconv-*.jar</code> in a terminal.
+You need Java installed.
+</p>
+
+
+<h2 id="ErrorHandling">Error handling</h2>
+
+<p>
+JEncConv gives the user a choice between several behaviors
+in case errors are found.
+Decoding behavior and encoding behavior are chosen separately.
+</p>
+
+<ul>
+	<li>
+	Stop and fail (this is the default).
+	Useful for decoding
+	if the file is correct but you don't know its encoding.
+	Useful for encoding
+	if some characters aren't valid for the encoding chosen.
+	</li>
+
+	<li>
+	Replace the erroneous parts with a (custom) character (or string).
+	Useful for decoding if you have a damaged file.
+	Useful for encoding if you <em>must</em> must use that encoding,
+	e.g. ASCII, and decide to lose characters it doesn't support.
+	</li>
+
+	<li>
+	Ignore the error altogether and continue
+	</li>
+</ul>
+
+
+<h2>Related project PyEncConv</h2>
+
+<p>
+<a href="http://sourceforge.net/projects/pyencconv/">PyEncConv</a>
+is a similar project written in Python 3.
+</p>
+
+<p>
+Both projects use the encoding and decoding functionality
+of their platforms (Java and Python).
+For most uses, they behave identically.
+But for some corner cases, you might prefer one over the other.
+</p>
+
+<p>
+<em>Supported encodings</em>:
+Many encodings are supported by both, but not all
+(for example ISO-8859-16 (Latin10) is supported by Python 3
+but not by Sun's Java 1.6).
+</p>
+
+<p>
+<em>Error Handling</em>:
+PyEncConv only uses its platform's default behavior
+(stop and fail with an error).
+</p>
+
+
+<h2>Develop</h2>
+
+<h3>Write plugins</h3>
+<p>
+Writing plugins is easy!
+The <a href="plugins-tutorial.html">Plugins Tutorial</a> page
+has a step-by-step example.
+</p>
+
+<h3>Source code</h3>
+<p>
+Browse the sources on
+<a href="http://github.com/MihaiB/JEncConv">github.com/MihaiB/JEncConv</a>.
+To build from sources, you need
+<a href="http://sourceforge.net/projects/mihaib-utils/">this jar</a>
+in the <code>lib/</code> directory
+(a personal library for easily building a Swing GUI).
+</p>
+
+<p>
+The project has an ant buildfile.
+Use <code>ant -p</code> for the project help information.
+</p>
+
+
+<h2>Other</h2>
+
+<p>
+A <a href="http://www.asp-shareware.org/pad/">PAD file</a>
+for the program is provided <a href="pad-file/pad-file.xml">here</a>.
+It was created using <a href="http://www.padbuilder.com/">padbuilder.com</a>.
+</p>
+
+<p>
+My sourceforge
+<a href="http://mihaiboro.users.sourceforge.net/">developer page</a>.
+</p>
+
+
+<p>
+<a href="http://validator.w3.org/check?uri=referer"><img
+	src="logos/valid-xhtml10-blue.png"
+	alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a>
+<a href="http://jigsaw.w3.org/css-validator/check/referer"><img
+	src="logos/valid-css-blue.png"
+	alt="Valid CSS" height="31" width="88" /></a>
+</p>
+
+
+</body>
+
+</html>

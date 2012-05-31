@@ -1,0 +1,19 @@
+@charset "utf-8";
+
+img {
+	border: none;
+}
+
+body {
+	background-color:#ffd;
+}
+
+a {
+	color: #630;
+	font-weight: bold;
+}
+
+a:visited {
+	color: #309;
+}
+

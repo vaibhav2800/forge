@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+<title>DiceLottery</title>
+</head>
+
+<body>
+
+<h1>DiceLottery</h1>
+
+<p>
+<img class="left" alt="logo" width="64" height="64"
+src="logos/dicelottery-64.png" />
+DiceLottery is a program which maps (random) events
+from an available source to a desired destination.
+For instance you can choose lottery numbers to bet on
+by throwing a pair of dice (several times).
+
+This way, you can use an <em>available</em>, <em>fair</em> source of events
+which you <em>trust</em> (e.g. a coin, a pair of dice)
+and map its outcomes to your desired destination
+(e.g. lottery numbers, the winner for a drawing).
+</p>
+
+<p>
+The program also ensures <em>fairness</em> in the mapping it performs
+(your source of events must also be fair of course).
+For instance when throwing a coin 3 times in order to choose a day of the week,
+the mapping is performed from 8 (=2<sup>3</sup>) to 7 events.
+If all 8 would be mapped, then the 7 days of the week
+would not have equal probabilities
+(and thus the mapping would not be <em>fair</em>).
+The program will only map (the first) 7 inputs
+and report that the mapping can't be performed
+if you enter the 8<sup>th</sup> one.
+</p>
+
+<h2>Download</h2>
+<p>
+Download the latest version from
+<a href="http://sourceforge.net/projects/dicelottery/">sourceforge</a>.
+The program is distributed as a <code>.zip</code> archive
+containing a (cross-platform) <code>.jar</code> file
+and a few other configuration files.
+After unzipping, you may run the program
+by double-clicking the <code>.jar</code>
+or by typing <code>java -jar dicelottery.jar</code> in a terminal.
+You need Java installed.
+</p>
+
+<h2>Source code</h2>
+<p>
+Browse the sources
+on <a href="http://github.com/MihaiB/DiceLottery">github</a>.
+</p>
+
+<p>
+Read the <a href="doc/">API Documentation</a> (generated using javadoc).
+</p>
+
+<h2>Other</h2>
+<p>
+A <a href="http://www.asp-shareware.org/pad/">PAD file</a>
+for the program is provided <a href="pad-file/pad-file.xml">here</a>.
+It was created using <a href="http://www.padbuilder.com/">padbuilder.com</a>
+and is used by sites like
+<a href="http://mac.softpedia.com/get/Math-Scientific/DiceLottery.shtml">softpedia</a>
+to be notified about the latest version.
+</p>
+
+<p>
+My sourceforge <a href="http://mihaiboro.users.sourceforge.net">developer page</a>.
+</p>
+
+<p>
+<a href="http://validator.w3.org/check?uri=referer"><img
+	src="logos/valid-xhtml10-blue.png"
+	alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a>
+<a href="http://jigsaw.w3.org/css-validator/check/referer"><img
+	src="logos/valid-css-blue.png"
+	alt="Valid CSS" height="31" width="88" /></a>
+</p>
+
+</body>
+
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+<title>Plugin Writing Tutorial – JFileConv</title>
+</head>
+
+<body>
+
+<p>
+Back to <a href="/">JFileConv homepage</a>.
+</p>
+
+<h1>JFileConv Plugin Tutorial</h1>
+
+<p>
+JFileConv reads characters from a file
+and displays the text or writes it to another file.
+<em>Plugins</em> can be used to change the text being read.
+</p>
+
+<p>
+JFileConv and its plugins are written in Java.
+To write a plugin, you need the JDK
+and the <code>jfileconv-*.jar</code> file used to run the program
+(you get it when you download the program from the sourceforge
+<a href="http://sourceforge.net/projects/jfileconv/">project page</a>).
+The source code for the program and the default plugins is on
+<a href="http://github.com/MihaiB/JFileConv">github</a>.
+</p>
+
+
+<h2>The Plugin Architecture</h2>
+
+<p>
+The program uses Java's ServiceLocator functionality.
+All plugins implement the interface:
+</p>
+
+<p>
+<a href="doc/com/github/mihaib/jfileconv/ReaderFactory.html">
+	com.github.mihaib.jfileconv.ReaderFactory
+</a>
+</p>
+
+<p>
+The most important method is
+<a href="doc/com/github/mihaib/jfileconv/ReaderFactory.html#getFilter(java.io.Reader)">
+	java.io.Reader getFilter(java.io.Reader r)</a>
+which takes a <code>Reader</code> parameter (e.g. the input file)
+and returns another <code>Reader</code>
+which acts as a <em>filter</em> for it:
+It reads characters from <code>r</code>,
+performs an operation on the text (e.g. changes all letters to uppercase)
+and returns the result.
+</p>
+
+<p>To create and use a new plugin, we must take the following steps:</p>
+<ol>
+	<li>Write the plugin</li>
+
+	<li>
+	Compile it and place the resulting <code>.class</code> files
+	in correct subdirectories under the <code>plugins/</code> directory
+	(these subdirectories must reflect the plugin's package name).
+	</li>
+
+	<li>
+	Tell JFileConv about the new plugin by adding the plugin's name
+	(the fully qualified class name) to the
+<code>plugins/META-INF/services/com.github.mihaib.jfileconv.ReaderFactory</code>
+	file.
+	This is a text file containing the name of all plugins, one per line.
+	It tells Java's ServiceLocator which classes implement that interface.
+	</li>
+</ol>
+
+<p>
+When running the program, it will try to load the plugins listed in
+<code>plugins/META-INF/services/com.github.mihaib.jfileconv.ReaderFactory</code>
+and display them in the GUI.
+</p>
+
+<h2>Write the plugin</h2>
+
+<p>
+Let's write a simple plugin that replaces all
+<strong>i</strong> (lowercase i) characters from the text with
+<strong>!</strong> (an exclamation mark, or bang).
+
+We'll call this plugin <strong>Bang</strong>
+and place it in the package <strong>tutorial.replace</strong>.
+</p>
+
+<p>
+Here is the code (<a href="Bang.java">download Bang.java</a>):
+</p>
+
+<pre>
+package tutorial.replace;
+
+import java.io.IOException;
+import java.io.Reader;
+
+import com.github.mihaib.jfileconv.ReaderFactory;
+
+public class Bang implements ReaderFactory {
+
+	@Override
+	public Reader getFilter(final Reader r) {
+		return new Reader() {
+			@Override
+			public int read(char[] cbuf, int off, int len) throws IOException {
+				len = r.read(cbuf, off, len);
+
+				for (int i = off; i &lt; off + len; i++) {
+					if (cbuf[i] == 'i')
+						cbuf[i] = '!';
+				}
+
+				return len;
+			}
+
+			@Override
+			public void close() throws IOException {
+				r.close();
+			}
+		};
+	}
+
+	@Override
+	public String toString() {
+		return "Bang: i -&gt; !";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Convert 'i' to '!'";
+	}
+
+}
+</pre>
+
+
+<h2>Compile</h2>
+
+<pre>
+$ javac -cp jfileconv-1.2.jar -d plugins Bang.java
+$ tree
+.
+├── Bang.java
+├── jfileconv-1.2.jar
+├── lib
+│   └── mihaib-utils-1.1.1.jar
+└── plugins
+    ├── com
+    │   └── github
+    │       └── mihaib
+    │           └── jfileconv
+    │               └── plugins
+    │                   ├── MirrorASCIIDigits$1.class
+    │                   ├── MirrorASCIIDigits.class
+    │                   ├── MirrorASCIILetters$1.class
+    │                   └── MirrorASCIILetters.class
+    ├── META-INF
+    │   └── services
+    │       └── com.github.mihaib.jfileconv.ReaderFactory
+    └── tutorial
+        └── replace
+            ├── Bang$1.class
+            └── Bang.class
+</pre>
+
+
+<h2>Tell JFileConv about it</h2>
+
+<p>
+Edit the text file
+<code>plugins/META-INF/services/com.github.mihaib.jfileconv.ReaderFactory</code>
+and add this line:
+</p>
+<pre>
+tutorial.replace.Bang
+</pre>
+
+<p>
+When running the program,
+<strong>Bang</strong> should be displayed in the plugins list.
+</p>
+
+
+<p>
+<a href="http://validator.w3.org/check?uri=referer"><img
+	src="logos/valid-xhtml10-blue.png"
+	alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a>
+<a href="http://jigsaw.w3.org/css-validator/check/referer"><img
+	src="logos/valid-css-blue.png"
+	alt="Valid CSS" height="31" width="88" /></a>
+</p>
+
+</body>
+</html>
