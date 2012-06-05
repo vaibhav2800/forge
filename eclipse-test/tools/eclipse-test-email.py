@@ -25,7 +25,8 @@ sample_config = OrderedDict((
 
 
 def parse_args():
-    parser = argparse.ArgumentParser('Send email with test results')
+    parser = argparse.ArgumentParser(
+            description='Send email with test results')
     parser.add_argument('containing_dir',
             help='''
             directory containing the output directories produced by
