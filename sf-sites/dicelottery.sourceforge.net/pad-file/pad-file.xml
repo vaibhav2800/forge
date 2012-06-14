@@ -34,10 +34,10 @@
 	</Company_Info>
 	<Program_Info>
 		<Program_Name>DiceLottery</Program_Name>
-		<Program_Version>1.5.1</Program_Version>
-		<Program_Release_Month>5</Program_Release_Month>
-		<Program_Release_Day>7</Program_Release_Day>
-		<Program_Release_Year>2010</Program_Release_Year>
+		<Program_Version>1.6</Program_Version>
+		<Program_Release_Month>6</Program_Release_Month>
+		<Program_Release_Day>4</Program_Release_Day>
+		<Program_Release_Year>2012</Program_Release_Year>
 		<Program_Cost_Dollars />
 		<Program_Cost_Other_Code />
 		<Program_Cost_Other />
@@ -85,7 +85,7 @@
 			<Application_XML_File_URL>http://dicelottery.sourceforge.net/pad-file/pad-file.xml</Application_XML_File_URL>
 		</Application_URLs>
 		<Download_URLs>
-			<Primary_Download_URL>http://sourceforge.net/projects/dicelottery/files/DiceLottery/1.5/DiceLottery-1.5.1.zip/download</Primary_Download_URL>
+			<Primary_Download_URL>http://sourceforge.net/projects/dicelottery/files/DiceLottery/1.6/DiceLottery-1.6.zip/download</Primary_Download_URL>
 			<Secondary_Download_URL />
 			<Additional_Download_URL_1 />
 			<Additional_Download_URL_2 />
