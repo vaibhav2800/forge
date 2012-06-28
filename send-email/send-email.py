@@ -2,6 +2,7 @@
 
 import argparse
 import email.message
+from email.utils import COMMASPACE
 import getpass
 import smtplib
 
@@ -15,7 +16,8 @@ def parse_args():
     parser.add_argument('-u', '--user', required=True, help='username')
     parser.add_argument('--from', dest='from_addr', metavar='FROM',
             required=True, help='From email address')
-    parser.add_argument('--to', required=True, help='To email address')
+    parser.add_argument('--to', required=True, nargs='+',
+            help='To email address(es)')
     parser.add_argument('-s', '--subject', required=True, help='Subject')
     parser.add_argument('-m', '--message', required=True, help='Message body')
 
@@ -27,7 +29,7 @@ if __name__ == '__main__':
 
     msg = email.message.Message()
     msg.add_header('From', args.from_addr)
-    msg.add_header('To', args.to)
+    msg.add_header('To', COMMASPACE.join(args.to))
     msg.add_header('Subject', args.subject)
     msg.set_payload(args.message)
 
