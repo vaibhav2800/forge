@@ -1,22 +1,42 @@
 Test runner for Eclipse JUnit run configurations.
 
 1. Eclipse Initial Setup:
-– Make a new Eclipse workspace and checkout modules from CVS
-– Run each JUnit run configuration once
-– Disable Project → Build Automatically
-– Project Clean (uncheck ‘start a build immediately’)
-– From Eclipse update site http://eclipse.indweb.hu/ install Headless Eclipse
-  (check ‘Contact all update sites during install to find required software’)
-– close Eclipse
+– Download the Eclipse you use (e.g. Eclipse for RCP and RAP Developers)
+– Install the CDT plugin (e.g. Help → Install New Software → Juno →
+  CDT Visual C++ Support)
+  This is used to make a new workspace, import your projects and build them.
+– Run one of the run configurations and save the following files from
+  .metadata/.plugins/org.eclipse.pde.core/pde-junit/ :
+
+pde-junit/
+├── config.ini
+├── dev.properties
+└── org.eclipse.equinox.simpleconfigurator
+    └── bundles.info
+
+  config.ini allows environment variables (but you can't use /../ in a path).
+  bundles.info doesn't.
+  You could replace the paths with custom strings
+  (e.g. ECLTEST_WSP, ECLIPSE_DIR) and replace those before running the tests.
+– For each automated test run you can delete the workspace,
+  import your projects, and copy this pde-junit/ directory before running.
 
 2. Running an automated test:
 Use eclipse-test.py.
 
-I suggest structuring your output directories this way:
+Structuring your output directories like this:
 test-results/
 ├── run-YYYY.MM.DD-HH:MM:SS/
 └── run-YYYY.MM.DD-HH:MM:SS/
 
 by passing this arg to the program: test-results/run-`date +%Y.%m.%d-%H:%M:%S`
-This structure is useful for automatically finding & investigating
-the results of test runs.
+allows chronological ordering by simple lexicographical ordering.
+
+
+Old notes below:
+
+Old Eclipse Setup involved:
+– checking out modules in a workspace and keeping that workspace
+– From Eclipse update site http://eclipse.indweb.hu/ install Headless Eclipse
+  (check ‘Contact all update sites during install to find required software’)
+– Running each JUnit run configuration once

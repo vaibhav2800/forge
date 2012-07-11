@@ -88,6 +88,7 @@ def parse_args():
             The executable will have the following variables added to its
             environment:
             ECLTEST_ECLIPSE_BIN (the eclipse_bin arg above),
+            ECLTEST_ECLIPSE_HOME (the directory containing eclipse_bin),
             ECLTEST_WSP (the workspace arg above),
             ECLTEST_PORT (the port where the JUnit listener will listen).
             The 'name' field is used for the XML file
@@ -105,12 +106,32 @@ def parse_args():
     parser.add_argument('--random', action='store_true',
             help='Run launchers in random order')
     parser.add_argument('--run-after-checkout', metavar='COMMAND',
-            help='Run %(metavar)s after checkout, before build')
+            help='''Run %(metavar)s after checkout, before build.
+            The following variables are added to the environment:
+            ECLTEST_ECLIPSE_BIN (the eclipse_bin arg above),
+            ECLTEST_ECLIPSE_HOME (the directory containing eclipse_bin),
+            ECLTEST_WSP (the workspace arg above).
+            ''')
+    parser.add_argument('--run-after-build', metavar='COMMAND',
+            help='''Run %(metavar)s after build, before running the tests.
+            The same environment variables are added as for
+            --run-after-checkout.
+            ''')
     parser.add_argument('--print-args', action='store_true',
             help='''Print the arguments this program was invoked with
             to the ECLTEST_RESULT file. Can be used for debugging.''')
 
     return parser.parse_args()
+
+
+def get_augmented_env(args):
+    'Returns a dict() containing os.environ and our custom env vars.'
+
+    env = dict(os.environ)
+    env['ECLTEST_ECLIPSE_BIN'] = args.eclipse_bin
+    env['ECLTEST_ECLIPSE_HOME'] = os.path.dirname(args.eclipse_bin)
+    env['ECLTEST_WSP'] = args.workspace
+    return env
 
 
 def launch(args, launcher_name, launcher_data, port):
@@ -127,9 +148,7 @@ def launch(args, launcher_name, launcher_data, port):
         launcher_name, str(port)],
         cwd=args.results_dir)
 
-    env = dict(os.environ)
-    env['ECLTEST_ECLIPSE_BIN'] = args.eclipse_bin
-    env['ECLTEST_WSP'] = args.workspace
+    env = get_augmented_env(args)
     env['ECLTEST_PORT'] = str(port)
     p2 = subprocess.Popen([launcher_data['bin']], env=env)
 
@@ -286,12 +305,17 @@ if __name__ == '__main__':
                 '--branch', args.branch])
 
         if args.run_after_checkout:
-            subprocess.check_call([args.run_after_checkout])
+            subprocess.check_call([args.run_after_checkout],
+                    env=get_augmented_env(args))
 
         if not args.no_build:
             subprocess.check_call([
                 os.path.join(program_dir, 'eclipse-build.py'),
                 args.eclipse_bin, args.workspace])
+
+        if args.run_after_build:
+            subprocess.check_call([args.run_after_build],
+                    env=get_augmented_env(args))
 
         subprocess.check_call(['ant', '-f',
             os.path.join(program_dir, 'eclipse-junit-listener', 'build.xml'),
