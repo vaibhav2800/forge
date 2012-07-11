@@ -20,6 +20,8 @@ pde-junit/
   (e.g. ECLTEST_WSP, ECLIPSE_DIR) and replace those before running the tests.
 – For each automated test run you can delete the workspace,
   import your projects, and copy this pde-junit/ directory before running.
+– Start your test suites once by hand. This may add files & dirs under your
+  eclipse/ dir.
 
 2. Running an automated test:
 Use eclipse-test.py.

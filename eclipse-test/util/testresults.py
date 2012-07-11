@@ -89,7 +89,7 @@ def _getGlobalProblemName(N):
 
 
 class TestSuite():
-    '''A completed test suite having several test cases
+    '''A completed test suite having several test cases.
 
     Field .seconds is a float.
     '''
