@@ -1,6 +1,64 @@
+from collections import deque
+from collections import OrderedDict
 import datetime
 import html
 from string import Template
+
+
+def humansize(n, sizes, beforeUnit='', sep=' ',
+        noLeadZero=True, noTrailZero=True):
+    '''humansize(n, sizes, beforeUnit='', sep=' ',
+    noLeadZero=True, noTrailZero=True) -> str
+
+    sizes = OrderedDict((('s', 1), ('m', 60), ('h', 60)))
+    Can omit leading and trailing units that are zero.
+    Returns: 1h 5m 20s
+    sep - between 1h and 5m
+    beforeUnit - before '1' and 'h'
+    '''
+
+    d = deque()
+    for unit, size in sizes.items():
+        if len(d):
+            prev_unit, x = d.popleft()
+            d.appendleft((prev_unit, x % size))
+        else:
+            x = n
+        d.appendleft((unit, x // size))
+
+    if noLeadZero:
+        while len(d):
+            unit, size = d.popleft()
+            if size:
+                d.appendleft((unit, size))
+                break
+
+    if noTrailZero:
+        while len(d):
+            unit, size = d.pop()
+            if size:
+                d.append((unit, size))
+                break
+
+    if not d:
+        return '0'
+
+    return sep.join([str(size) + beforeUnit + unit for unit, size in d])
+
+
+def humantime(seconds, beforeUnit='', sep=' ',
+        noLeadZero=True, noTrailZero=True):
+    return humansize(seconds, OrderedDict((('s', 1), ('m', 60), ('h', 60))),
+            beforeUnit, sep, noLeadZero, noTrailZero)
+
+
+def float_humantime(seconds_float, beforeUnit='', sep=' ',
+        noLeadZero=True, noTrailZero=True):
+    if seconds_float >= 1:
+        return humantime(int(seconds_float), beforeUnit, sep,
+                noLeadZero, noTrailZero)
+    else:
+        return str(seconds_float) + ' s'
 
 
 html_start_templ = Template('''
@@ -23,7 +81,7 @@ html_start_templ = Template('''
                 tr.bad_row a:hover { text-decoration: underline; }
                 tr.bad_detail_row { color: $color_detail; }
 
-                td.testcase-time { text-align: right; }
+                td.testcase-time { text-align: right; font-family: monospace; }
             </style>
         </head>
         <body>
@@ -146,14 +204,15 @@ def get_suite_summary(suite):
         'total': suite.nTests,
         'err': suite.nErr,
         'fail': suite.nFail,
-        'runtime': html.escape(str(datetime.timedelta(seconds=suite.seconds))),
+        'runtime':
+            html.escape(str(datetime.timedelta(seconds=int(suite.seconds)))),
         'starttime': html.escape(suite.timestamp)
         })
 
 
 testcase_good_row_templ = Template('''
         <tr class="good_row">
-            <td class="testcase-time">$time s</td>
+            <td class="testcase-time">$time</td>
             <td>
                 $name
             </td>
@@ -162,7 +221,7 @@ testcase_good_row_templ = Template('''
 
 testcase_bad_row_templ = Template('''
         <tr class="bad_row">
-            <td class="testcase-time">$time s</td>
+            <td class="testcase-time">$time</td>
             <td>
                 <a href="#"
                     onclick="toggle_failure_detail(this); return false;">
@@ -181,12 +240,12 @@ testcase_bad_row_templ = Template('''
 def get_testcase_row(tc):
     if tc.err is None and tc.fail is None:
         return testcase_good_row_templ.substitute({
-            'time': tc.time,
+            'time': float_humantime(tc.time),
             'name': html.escape(tc.name)
             })
     else:
         return testcase_bad_row_templ.substitute({
-            'time': tc.time,
+            'time': float_humantime(tc.time),
             'name': html.escape(tc.name),
             'problem_type': 'error' if tc.err is not None else 'failure',
             'problem_msg': html.escape(

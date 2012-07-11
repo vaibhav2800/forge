@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import argparse
-from collections import deque
 from collections import OrderedDict
 import datetime
 import json
@@ -12,6 +11,7 @@ import subprocess
 import sys
 import time
 import traceback
+import util.fmt
 
 
 base_port = 50000
@@ -231,47 +231,6 @@ def printArgsIfRequested(f, args):
         print(args, file=f)
 
 
-def humansize(n, sizes, beforeUnit='', sep=' ',
-        noLeadZero=True, noTrailZero=True):
-    '''humansize(n, sizes, beforeUnit='', sep=' ',
-    noLeadZero=True, noTrailZero=True) -> str
-
-    sizes = OrderedDict((('s', 1), ('m', 60), ('h', 60)))
-    Can omit leading and trailing units that are zero.
-    Returns: 1h 5m 20s
-    sep - between 1h and 5m
-    beforeUnit - before '1' and 'h'
-    '''
-
-    d = deque()
-    for unit, size in sizes.items():
-        if len(d):
-            prev_unit, x = d.popleft()
-            d.appendleft((prev_unit, x % size))
-        else:
-            x = n
-        d.appendleft((unit, x // size))
-
-    if noLeadZero:
-        while len(d):
-            unit, size = d.popleft()
-            if size:
-                d.appendleft((unit, size))
-                break
-
-    if noTrailZero:
-        while len(d):
-            unit, size = d.pop()
-            if size:
-                d.append((unit, size))
-                break
-
-    if not d:
-        return '0'
-
-    return sep.join([str(size) + beforeUnit + unit for unit, size in d])
-
-
 def printKilledSuites(f, killed_suites, launchers_info):
     '''Prints a status line (other than 'OK\n') and lists the killed suites.
 
@@ -281,9 +240,7 @@ def printKilledSuites(f, killed_suites, launchers_info):
     print('The following test suites TIMED OUT:', file=f)
     for s in sorted(killed_suites):
         if s in launchers_info:
-            timeout = humansize(
-                    launchers_info[s]['timeout'],
-                    OrderedDict((('s', 1), ('m', 60), ('h', 60))))
+            timeout = util.fmt.humantime(launchers_info[s]['timeout'])
         else:
             timeout = 'timeout not found'
         print(s, timeout, sep=': ', file=f)

@@ -89,7 +89,10 @@ def _getGlobalProblemName(N):
 
 
 class TestSuite():
-    '''A completed test suite having several test cases'''
+    '''A completed test suite having several test cases
+
+    Field .seconds is a float.
+    '''
 
 
     def __init__(self, name, nTests, nErr, nFail, seconds, timestamp):
@@ -103,6 +106,10 @@ class TestSuite():
 
 
 class TestCase():
+    '''A testcase.
+
+    Field .time is a float.
+    '''
 
 
     def __init__(self, name, time, errorMsg, failureMsg):
@@ -140,7 +147,7 @@ class TestParser():
                 int(d['tests']),
                 int(d['errors']),
                 int(d['failures']),
-                int(float(d['time'])),
+                float(d['time']),
                 _suite_tstamp_to_local_time(d['timestamp']))
 
 
@@ -161,12 +168,12 @@ class TestParser():
                 int(d['tests']),
                 int(d['errors']),
                 int(d['failures']),
-                int(float(d['time'])),
+                float(d['time']),
                 _suite_tstamp_to_local_time(d['timestamp']))
 
         for d in d['testcases']:
             test = TestCase(d['name'],
-                    int(float(d['time'])),
+                    float(d['time']),
                     d['errorMsg'],
                     d['failureMsg'])
             suite.testcases.append(test)
