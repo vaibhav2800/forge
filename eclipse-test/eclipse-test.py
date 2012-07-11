@@ -117,6 +117,15 @@ def parse_args():
             The same environment variables are added as for
             --run-after-checkout.
             ''')
+    parser.add_argument('--wait-after-junit-listener', type=int, metavar='N',
+            help='''Wait for %(metavar)s seconds after starting a
+            JUnit listener (and before starting its associated test suite).
+            ''')
+    parser.add_argument('--wait-after-launcher', type=int, metavar='N',
+            help='''Wait for %(metavar)s seconds after starting a launcher
+            (and before moving on to the next launcher
+            and its associated JUnit listener).
+            ''')
     parser.add_argument('--print-args', action='store_true',
             help='''Print the arguments this program was invoked with
             to the ECLTEST_RESULT file. Can be used for debugging.''')
@@ -148,9 +157,15 @@ def launch(args, launcher_name, launcher_data, port):
         launcher_name, str(port)],
         cwd=args.results_dir)
 
+    if args.wait_after_junit_listener:
+        time.sleep(args.wait_after_junit_listener)
+
     env = get_augmented_env(args)
     env['ECLTEST_PORT'] = str(port)
     p2 = subprocess.Popen([launcher_data['bin']], env=env)
+
+    if args.wait_after_launcher:
+        time.sleep(args.wait_after_launcher)
 
     return p1, p2
 
