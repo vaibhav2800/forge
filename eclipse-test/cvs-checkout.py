@@ -36,10 +36,6 @@ if __name__ == '__main__':
         modules_info = json.load(f, object_pairs_hook=OrderedDict)
 
     os.chdir(args.dir)
-    for name in os.listdir():
-        if name != '.metadata':
-            subprocess.check_call(['rm', '-rf', name])
-
     for (module, cvsroot) in modules_info.items():
         subprocess.check_call(
                 ['cvs', '-d', cvsroot, 'checkout', '-r', args.branch, module])
