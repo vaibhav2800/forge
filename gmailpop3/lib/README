@@ -1,0 +1,8 @@
+JAR files in this dir (and its subdirs) are added to the classpath
+and copied to dist/lib.
+You can put all JARs in this dir directly
+or use subdirectories to organize them: it doesn't matter.
+
+JARs needed:
+Download the Selenium WebDriver, put its JAR and all its dependencies
+(the JARs in its lib/ dir) here.

@@ -1,0 +1,6 @@
+see lib/README for the required depency JARs.
+
+To run Chromium you need a program called chromiumdriver.
+
+download chromiumdriver from http://code.google.com/p/chromium/downloads/list
+and put it in your PATH.
