@@ -33,7 +33,7 @@ public class Main {
 	public static void main(String[] args) {
 		if (args.length != 3) {
 			System.err.println("Usage: gmailpop datadir username passd_store");
-			System.err.println("eg: gmailpop ~/.config/chromium myusername gnome");
+			System.err.println("eg: gmailpop ~/.config/chromium myemail gnome");
 			System.exit(1);
 		}
 
@@ -62,12 +62,11 @@ public class Main {
 		// Accounts and Import; By.linkText doesn't work
 		waitForPresence(By.partialLinkText("Accounts and Import")).click();
 
-		// Check mail now; link missing for accounts currently checking email
-		wait.until(ExpectedConditions.presenceOfElementLocated(By.id(":ix")));
 		sleep(3 * 1000);
+		// Check mail now; link missing for accounts currently checking email
 		// Doesn't work for multiple POP3 accounts: hardly works for 1
 		for (WebElement e : driver.findElements(By
-				.cssSelector("div[id=\":ix\"] td.CY span[role=\"link\"]"))) {
+				.cssSelector("td.CY span[role=\"link\"]"))) {
 			if ("Check mail now".equals(e.getText())) {
 				e.click();
 				break;
