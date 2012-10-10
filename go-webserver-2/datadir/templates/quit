@@ -1,0 +1,8 @@
+{{template "header" .}}
+{{if $canShutdown := .canShutdown}}
+Shutting down. Goodbye.
+{{else}}
+You don't have permission to shut down the server.<br/>
+Go <a href="/">back home</a>.
+{{end}}
+{{template "footer"}}

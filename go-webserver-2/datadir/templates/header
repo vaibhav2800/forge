@@ -1,0 +1,9 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/pub/money-trail-16.png">
+    <link rel="stylesheet" type="text/css" href="/pub/style.css">
+    <title>{{if $title := .title}}{{$title}}{{else}}Money Trail{{end}}</title>
+  </head>
+  <body>

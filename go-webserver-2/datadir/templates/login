@@ -1,0 +1,11 @@
+{{template "header" .}}
+{{if .badLogin}}Bad username or password.<br/>{{end}}
+<form action="{{.loginPath}}" method="post">
+	<label for="user">User:</label>
+	<input type="text" id="user" name="user"><br/>
+	<label for="pass">Pass:</label>
+	<input type="password" id="pass" name="pass"><br/>
+
+	<input type="submit" value="Submit"/>
+</form>
+{{template "footer"}}

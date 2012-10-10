@@ -1,0 +1,4 @@
+{{template "header" .}}
+You have logged out.<br/>
+Go <a href="/">back home</a>.
+{{template "footer"}}

@@ -1,0 +1,9 @@
+{
+    "user": {
+        "passHash": "9d4e1e23bd5b727046a9e3b4b7db57bd8d6ee684",
+        "canShutdown": true
+    },
+    "user2": {
+        "passHash": "8be52126a6fde450a7162a3651d589bb51e9579d"
+    }
+}

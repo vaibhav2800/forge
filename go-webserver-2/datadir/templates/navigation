@@ -1,0 +1,7 @@
+<ul id="navlist">
+{{range .}}
+	{{if $label := .GetNavLabel}}
+		<li><a href="{{.GetPath}}">{{$label}}</a></li>
+	{{end}}
+{{end}}
+</ul>
