@@ -285,6 +285,12 @@ func (s *Stmt) Exec(args ...interface{}) error {
 			}
 			continue
 
+		case nil:
+			if rv := C.sqlite3_bind_null(s.stmt, C.int(i+1)); rv != 0 {
+				return s.c.error(rv)
+			}
+			continue
+
 		case bool:
 			if v {
 				str = "1"
