@@ -1,4 +1,6 @@
 The Go sqlite3 binding at http://code.google.com/p/gosqlite/
-with support for writing NULL values to the database.
+with support for:
+– writing NULL values to the database
+– writing int and bool values as type "integer"
 
-Effectively the only change is adding the "case nil" in the Stmt.Exec method.
+Effectively the changes are the "nil", "int" and "bool" cases in Stmt.Exec.

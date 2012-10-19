@@ -291,12 +291,21 @@ func (s *Stmt) Exec(args ...interface{}) error {
 			}
 			continue
 
-		case bool:
-			if v {
-				str = "1"
-			} else {
-				str = "0"
+		case int:
+			if rv := C.sqlite3_bind_int(s.stmt, C.int(i+1), C.int(v)); rv != 0 {
+				return s.c.error(rv)
 			}
+			continue
+
+		case bool:
+			intVal := 0
+			if v {
+				intVal = 1
+			}
+			if rv := C.sqlite3_bind_int(s.stmt, C.int(i+1), C.int(intVal)); rv != 0 {
+				return s.c.error(rv)
+			}
+			continue
 
 		default:
 			str = fmt.Sprint(v)
