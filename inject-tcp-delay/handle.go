@@ -8,11 +8,8 @@ import (
 	"time"
 )
 
-const bufsize = 1024
-
-func delay() {
-	t := cmdline.minDelay +
-		rand.Intn(cmdline.maxDelay-cmdline.minDelay+1)
+func delay(min, max int) {
+	t := min + rand.Intn(max-min+1)
 
 	var d time.Duration
 	if cmdline.useMillis {
@@ -31,12 +28,19 @@ func pipe(r io.Reader, w io.Writer) {
 		}
 	}()
 
-	buf := make([]byte, bufsize)
+	firstChunk := true
+	buf := make([]byte, cmdline.bufsize)
 	for {
 		var n int
 		n, err = r.Read(buf)
-		if err != nil {
+		if n <= 0 {
 			return
+		}
+
+		if firstChunk {
+			firstChunk = false
+		} else {
+			delay(cmdline.minPostDelay, cmdline.maxPostDelay)
 		}
 
 		_, err = w.Write(buf[:n])
@@ -67,12 +71,12 @@ func handleSync(conn net.Conn) {
 	}
 	defer func() {
 		err2 := conn2.Close()
-		if err != nil {
+		if err == nil {
 			err = err2
 		}
 	}()
 
-	delay()
+	delay(cmdline.minPreDelay, cmdline.maxPreDelay)
 
 	ch := make(chan bool)
 	go func() {

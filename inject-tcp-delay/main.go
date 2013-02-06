@@ -16,6 +16,7 @@ func main() {
 		conn, err = l.Accept()
 		if err != nil {
 			log.Print(err)
+			continue
 		}
 
 		handleAsync(conn)
