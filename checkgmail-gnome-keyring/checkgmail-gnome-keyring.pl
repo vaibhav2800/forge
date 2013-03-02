@@ -556,9 +556,9 @@ if (($usekwallet) && ($save_passwd)) {
 if (($usegnomekeyring) && ($save_passwd)) {
 	my $gkr = Passwd::Keyring::Gnome->new(
 		app => "checkgmail-gnome-keyring",
-		group => "my-group",
+		group => "my-cgk-group",
 	);
-	$passwd = $gkr->get_password($user, "my-realm");
+	$passwd = $gkr->get_password("cgk-$user", "my-cgk-realm");
 }
 
 # remove passwd from the pref_variables hash if the user requests it and prompt for login
@@ -2837,9 +2837,9 @@ sub show_prefs {
 		if ($usegnomekeyring && $save_passwd) {
 			my $gkr = Passwd::Keyring::Gnome->new(
 				app => "checkgmail-gnome-keyring",
-				group => "my-group",
+				group => "my-cgk-group",
 			);
-			$gkr->set_password($user, $passwd, "my-realm");
+			$gkr->set_password("cgk-$user", $passwd, "my-cgk-realm");
 		}
 
 		reinit_checks();
@@ -2987,9 +2987,9 @@ sub login {
 		if ($usegnomekeyring && $save_passwd) {
 			my $gkr = Passwd::Keyring::Gnome->new(
 				app => "checkgmail-gnome-keyring",
-				group => "my-group",
+				group => "my-cgk-group",
 			);
-			$gkr->set_password($user, $passwd, "my-realm");
+			$gkr->set_password("cgk-$user", $passwd, "my-cgk-realm");
 		}
 
 	} else {
