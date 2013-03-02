@@ -7,6 +7,7 @@
 
 # version 1.13svn (14/2/2008)
 # Copyright © 2005-7 Owen Marshall
+# Copyright © 2013 Mihai Borobocea
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +35,13 @@ use strict;
 # global variables (can't be set global in the BEGIN block)
 my ($version, $silent, $nocrypt, $update, $profile, $disable_monitors_check,
 		$private, $cookies, $popup_size, $hosted_tmp, $show_popup_delay, 
-		$popup_persistence, $usekwallet, $nologin, $mailno, $debug);
+		$popup_persistence, $usekwallet, $usegnomekeyring,
+		$nologin, $mailno, $debug);
+
+use Passwd::Keyring::Gnome;
+# Always use gnomekeyring
+$usegnomekeyring = 1;
+
 BEGIN {
 	$version = "1.13svn";
 	$silent = 1;
@@ -242,7 +249,9 @@ EOF
 	}
 	
 	# Use kwallet if available
-	if (`which kwallet 2>/dev/null`) {
+	#if (`which kwallet 2>/dev/null`) {
+	# Never use kwallet
+	if (0) {
 		$usekwallet = 1;
 		$nocrypt = 1;
 	}
@@ -275,7 +284,7 @@ unless (($nocrypt) || (eval("encrypt('test_encryption');"))) {
 }
 
 # Show big fat warning if Crypt::Simple not found ...
-if ($nocrypt && !$silent && !$usekwallet) {
+if ($nocrypt && !$silent && !$usekwallet && !$usegnomekeyring) {
 	print <<EOF;
 *** Crypt::Simple not found, not working or disabled ***
 *** Passwords will be saved in plain text only ...   ***\n
@@ -543,8 +552,17 @@ if (($usekwallet) && ($save_passwd)) {
 	chomp $passwd;
 }
 
+# gnomekeyring integration – copy of the kwallet logic above
+if (($usegnomekeyring) && ($save_passwd)) {
+	my $gkr = Passwd::Keyring::Gnome->new(
+		app => "checkgmail-gnome-keyring",
+		group => "my-group",
+	);
+	$passwd = $gkr->get_password($user, "my-realm");
+}
+
 # remove passwd from the pref_variables hash if the user requests it and prompt for login
-unless ($save_passwd && !$usekwallet) {
+unless ($save_passwd && !$usekwallet && !$usegnomekeyring) {
 	delete $pref_variables{passwd};
 	login($trans{login_title}) unless $passwd;
 }
@@ -896,7 +914,7 @@ sub http_get {
 		
 		# Find the data to post
 		my $post_data;
-		$post_data = "ltmpl=default&ltmplcache=2&continue=http://mail.google.com/mail/?ui%3Dhtml&service=mail&rm=false&scc=1&GALX=$post_galx&$address&PersistentCookie=yes&rmShown=1&signIn=Sign+in&asts=";
+		$post_data = "ltmpl=default&ltmplcache=2&continue=https://mail.google.com/mail/?ui%3Dhtml&service=mail&rm=false&scc=1&GALX=$post_galx&$address&PersistentCookie=yes&rmShown=1&signIn=Sign+in&asts=";
 		
 		# Hide personal data from verbose display
 		my $post_display = $post_data;
@@ -1950,7 +1968,7 @@ sub get_login_href {
 	
 	my $target_uri;
 	if ($hosted) {
-		$target_uri = "http://mail.google.com/a/$hosted/$options_uri";
+		$target_uri = "https://mail.google.com/a/$hosted/$options_uri";
 	} else {
 		$target_uri = "https://www.google.com/accounts/ServiceLoginAuth?ltmpl=yj_wsad&ltmplcache=2&continue=$escaped_uri&service=mail&rm=false&ltmpl=yj_wsad&Email=$URI_user&Passwd=$URI_passwd&rmShown=1&null=Sign+in";
 	}
@@ -2793,7 +2811,7 @@ sub show_prefs {
 	
 	if ($response eq 'ok') {
 		# remove password from the hash if user requests it ...
-		if ($save_passwd && !$usekwallet) {
+		if ($save_passwd && !$usekwallet && !$usegnomekeyring) {
 			$pref_variables{passwd}=\$passwd;
 		} else {
 			delete $pref_variables{passwd};
@@ -2814,6 +2832,14 @@ sub show_prefs {
 			open KWALLET, "|kwallet -set checkgmail";
 			print KWALLET "$passwd\n";
 			close KWALLET;
+		}
+
+		if ($usegnomekeyring && $save_passwd) {
+			my $gkr = Passwd::Keyring::Gnome->new(
+				app => "checkgmail-gnome-keyring",
+				group => "my-group",
+			);
+			$gkr->set_password($user, $passwd, "my-realm");
 		}
 
 		reinit_checks();
@@ -2941,7 +2967,8 @@ sub login {
 	$dialog->show_all;
     	my $response = $dialog->run;
 	if ($response eq 'ok') {
-		if (($save_passwd)) {
+		# remove password from the hash if user requests it ...
+		if (($save_passwd) && !$usekwallet && !$usegnomekeyring) {
 			$pref_variables{passwd}=\$passwd;
 		} else {
 			delete $pref_variables{passwd};
@@ -2955,6 +2982,14 @@ sub login {
 			open KWALLET, "|kwallet -set checkgmail";
 			print KWALLET "$passwd\n";
 			close KWALLET;
+		}
+
+		if ($usegnomekeyring && $save_passwd) {
+			my $gkr = Passwd::Keyring::Gnome->new(
+				app => "checkgmail-gnome-keyring",
+				group => "my-group",
+			);
+			$gkr->set_password($user, $passwd, "my-realm");
 		}
 
 	} else {
@@ -3085,7 +3120,7 @@ sub set_icon {
 
 sub encrypt_real {
 	$_ = shift;
-	if ($nocrypt) {
+	if ($nocrypt || $usegnomekeyring) {
 		return $_;
 	} else {
 		return encrypt($_);
@@ -3094,7 +3129,7 @@ sub encrypt_real {
 
 sub decrypt_real {
 	$_ = shift;
-	if ($nocrypt) {
+	if ($nocrypt || $usegnomekeyring) {
 		return $_;
 	} else {
 		return decrypt($_);
