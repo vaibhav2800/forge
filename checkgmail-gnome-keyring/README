@@ -1,0 +1,7 @@
+CheckGmail with Gnome Keyring support
+
+The CheckGmail project is hosted at: http://checkgmail.sourceforge.net/
+
+We start with checkgmail's Perl script from the Debian/Ubuntu repositories
+(the Debian&Ubuntu scripts are identical as of March 2013, but different from
+the versions in CheckGmail's SVN repository).
