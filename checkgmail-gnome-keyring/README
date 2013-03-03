@@ -32,3 +32,6 @@ Login dialog.
 So the user doesn't have to re-enter the password after kernel updates.
 – Changed http:// to https:// for all gmail urls using http://
 Not sure when those code paths run, so don't know if this breaks anything.
+– Show a "loading" icon on startup instead of the "no new mail" one until
+completing the first mail check. Now the "no new mail" icon is unambiguous:
+it means there is no new mail.

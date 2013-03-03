@@ -485,14 +485,14 @@ unless (-d $icons_dir) {
 
 print "Parent: Loading icon data ...\n" if $debug;
 # we load the pixmaps as uuencoded data
-my ($error_data, $no_mail_data, $mail_data, $compose_mail_data, $star_on_data, $star_off_data);
+my ($error_data, $first_check_mail_data, $no_mail_data, $mail_data, $compose_mail_data, $star_on_data, $star_off_data);
 load_icon_data();
 
-my ($no_mail_pixbuf, $mail_pixbuf, $error_pixbuf, $star_pixbuf, $nostar_pixbuf);
+my ($first_check_mail_pixbuf, $no_mail_pixbuf, $mail_pixbuf, $error_pixbuf, $star_pixbuf, $nostar_pixbuf);
 my ($custom_no_mail_pixbuf, $custom_mail_pixbuf, $custom_error_pixbuf);
 set_icons();
 
-my $image = Gtk2::Image->new_from_pixbuf($no_mail_pixbuf);
+my $image = Gtk2::Image->new_from_pixbuf($first_check_mail_pixbuf);
 
 
 ##############
@@ -3083,6 +3083,7 @@ sub set_icons {
 	
 	# load defaults
 	$mail_pixbuf = load_pixbuf($mail_data);
+	$first_check_mail_pixbuf = load_pixbuf($first_check_mail_data);
 	$no_mail_pixbuf = load_pixbuf($no_mail_data);
 	$error_pixbuf = load_pixbuf($error_data);
 	$star_pixbuf = load_pixbuf($star_on_data);
@@ -3182,6 +3183,22 @@ M9K4R+!;CH>\?9"(%<-!@I=[MU@(JX!4/!J9,DK&CU`P8`7O`MQJ7RR5VGH/G
 M=0)N@)_KVUNSOKX>VV$XP_-<)XIZB/2;[0!VGE,F"788_OZ5`=(@L\'Z<GKHU
 MKE>T<=Y"%A<7KQ\Q#0(+^#\,X\'F=!A:P"QR62?)O_!GS`K6COO-L,Q_/````
 )`$E%3D2N0F""');
+
+	my $first_check_mail_data_lighter = unpack("u",
+'MB5!.1PT*&@H````-24A$4@```!`````0"`0```"U^C?J````BDE$050HSZV0
+M(1:#0`Q$?_84/0BZFDN@JZLX`:*JH@J-YR%75^]AD+BI(-UN48B-RKQD9C*!
+M*M73>S=HT-XE$@!AAQ<]55*2<!P`\'@#\5I(`FE+A;D?;QD[>9P"CB]^<]79\
+MM6Q1HR9-@EFS("KF1.$[/A)B^8<7`%T.UAK`4BJLUOWE;FVS6L=_`):-):IX
+/&(1+`````$E%3D2N0F""');
+
+	my $first_check_mail_data_darker = unpack("u",
+'MB5!.1PT*&@H````-24A$4@```!`````0"`0```"U^C?J````?TE$050HSZV0
+MH16`,!!#_W4F)F`"UD"@*]`(=#=@@D[`!-TI"`XH*$1/W;V\Y))`DXE$WT:-
+M.K="`2`XHJB:4H3?`6`]=53!0%<KK/9]V]E/?P:PN/CLK-WOWAZ3#28I"39M
+M@JQ\)PH7_"7DNH<$P\'0\'&PP@OYJTZ95[,*R5^0,5SB,JW(R=6`````!)14Y$
+$KD)@@@``');
+
+	$first_check_mail_data = $first_check_mail_data_lighter;
 	
 	$no_mail_data = unpack("u",
 'MB5!.1PT*&@H````-24A$4@```!`````0"`0```"U^C?J`````F)+1T0`_X>/
