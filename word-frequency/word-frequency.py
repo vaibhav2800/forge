@@ -16,11 +16,13 @@ def parse_args():
     parser.add_argument('-q', '--dont-quote-words', action='store_true')
     parser.add_argument('-m', '--load-in-memory', action='store_true',
             help='''Load the full contents of each file in memory before
-            processing it. Improves performance for large files but you must
+            processing it. May improve performance for large files but you must
             have enough free memory to load the largest file.''')
     parser.add_argument('-n', type=int, metavar='N', default=0,
             help='''Show top %(metavar)s results, default %(default)s.
             Set to 0 to show all results.''')
+    parser.add_argument('-t', '--tab', action='store_true',
+            help='Separate word from count by a tab instead of a space')
 
     args = parser.parse_args()
     if args.n < 0:
@@ -69,6 +71,14 @@ class BaseCounter():
                 for i in self._word_counts.items()]
         word_list.sort(key=lambda x: x.count, reverse=True)
         return word_list
+
+    def word_count(self):
+        '''Word count of scanned text. Includes duplicates.'''
+        return sum(self._word_counts.values())
+
+    def unique_word_count(self):
+        '''Number of unique words.'''
+        return len(self._word_counts)
 
 
 class CharCounter(BaseCounter):
@@ -134,15 +144,17 @@ if __name__ == '__main__':
             with open(filename, encoding='utf=8') as stream:
                 counter.read(stream)
     
+    print(counter.word_count(), ('characters' if args.char else 'words') + ',',
+            counter.unique_word_count(), 'unique', end='')
     results = counter.get_sorted_words()
-    item_names = 'characters' if args.char else 'words'
     if args.n:
-        print(len(results), item_names + ',', 'showing top', args.n)
+        print(', showing top', args.n, end='')
         results = results[:args.n]
-    else:
-        print(len(results), item_names)
+    print()
+
+    sep = '\t' if args.tab else ' '
     for x in results:
         word = repr(x.word)
         if args.dont_quote_words:
             word = word[1:-1]
-        print(word, x.count)
+        print(word, x.count, sep=sep)
