@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+from collections import deque
 import io
 import sys
 
@@ -23,20 +24,35 @@ def parse_args():
             Set to 0 to show all results.''')
     parser.add_argument('-t', '--tab', action='store_true',
             help='Separate word from count by a tab instead of a space')
+    parser.add_argument('-g', '--groups', action='store_true',
+            help='''Also count groups: letter groups in word-counting mode,
+            character groups in character-counting mode.''')
+    parser.add_argument('--group-size', type=int, metavar='N', default=2,
+            help='''Group size for counting letter- or character- groups,
+            default %(default)s.''')
 
     args = parser.parse_args()
     if args.n < 0:
         print('Invalid -n value', args.n, 'must be > 0', file=sys.stderr)
+        sys.exit(1)
+    if args.group_size < 2:
+        print('Invalid group size', args.group_size, 'must be >= 2',
+                file=sys.stderr)
         sys.exit(1)
     return args
 
 
 class BaseCounter():
 
-    def __init__(self, case_sensitive=False, load_in_memory=False):
+    def __init__(self, case_sensitive=False, load_in_memory=False,
+            group_size=0):
         self.case_sensitive = case_sensitive
         self.load_in_memory = load_in_memory
         self._word_counts = {}
+
+        self.group_size = group_size
+        if group_size:
+            self.group_counter = BaseCounter(case_sensitive=case_sensitive)
 
     def read(self, stream):
         if self.load_in_memory:
@@ -85,6 +101,20 @@ class CharCounter(BaseCounter):
 
     def __init__(self, **args):
         super().__init__(**args)
+        if self.group_size:
+            self.tail = deque([], self.group_size)
+
+    def add(self, c, **args):
+        super().add(c, **args)
+        if self.group_size:
+            self.tail.append(c)
+            if len(self.tail) == self.group_size:
+                self.group_counter.add(''.join(self.tail))
+
+    def read(self, stream):
+        if self.group_size:
+            self.tail.clear()
+        super().read(stream)
 
     def read_stream(self, stream):
         while True:
@@ -102,6 +132,12 @@ class WordCounter(BaseCounter):
 
     def __init__(self, **args):
         super().__init__(**args)
+
+    def add(self, word, **args):
+        super().add(word, **args)
+        if self.group_size:
+            for j in range(self.group_size, len(word) + 1):
+                self.group_counter.add(word[j - self.group_size : j])
 
     def read_stream(self, stream):
         buf = io.StringIO()
@@ -135,7 +171,8 @@ if __name__ == '__main__':
     args = parse_args()
     class_ = CharCounter if args.char else WordCounter
     counter = class_(case_sensitive=args.case_sensitive,
-            load_in_memory=args.load_in_memory)
+            load_in_memory=args.load_in_memory,
+            group_size=args.group_size if args.groups else 0)
 
     for filename in args.file:
         if filename == '-':
@@ -143,18 +180,25 @@ if __name__ == '__main__':
         else:
             with open(filename, encoding='utf=8') as stream:
                 counter.read(stream)
-    
-    print(counter.word_count(), ('characters' if args.char else 'words') + ',',
-            counter.unique_word_count(), 'unique', end='')
-    results = counter.get_sorted_words()
-    if args.n:
-        print(', showing top', args.n, end='')
-        results = results[:args.n]
-    print()
 
-    sep = '\t' if args.tab else ' '
-    for x in results:
-        word = repr(x.word)
-        if args.dont_quote_words:
-            word = word[1:-1]
-        print(word, x.count, sep=sep)
+    def print_counter(cnt, items_name):
+        print(cnt.word_count(), items_name + ',',
+                cnt.unique_word_count(), 'unique', end='')
+        results = cnt.get_sorted_words()
+        if args.n:
+            print(', showing top', args.n, end='')
+            results = results[:args.n]
+        print()
+
+        sep = '\t' if args.tab else ' '
+        for x in results:
+            word = repr(x.word)
+            if args.dont_quote_words:
+                word = word[1:-1]
+            print(word, x.count, sep=sep)
+
+    print_counter(counter, 'characters' if args.char else 'words')
+    if args.groups:
+        print()
+        print_counter(counter.group_counter,
+                ('character' if args.char else 'letter') + ' groups')
