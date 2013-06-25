@@ -30,6 +30,10 @@ def parse_args():
     parser.add_argument('--group-size', type=int, metavar='N', default=2,
             help='''Group size for counting letter- or character- groups,
             default %(default)s.''')
+    parser.add_argument('-p', '--percentage', action='store_true',
+            help='show frequency as percentage')
+    parser.add_argument('-d', '--decimals', type=int, metavar='D',
+            help='show frequency with %(metavar)s decimals')
 
     args = parser.parse_args()
     if args.n < 0:
@@ -37,6 +41,10 @@ def parse_args():
         sys.exit(1)
     if args.group_size < 2:
         print('Invalid group size', args.group_size, 'must be >= 2',
+                file=sys.stderr)
+        sys.exit(1)
+    if args.decimals and args.decimals < 0:
+        print('Invalid decimals', args.decimals, 'must be >= 0',
                 file=sys.stderr)
         sys.exit(1)
     return args
@@ -181,8 +189,18 @@ if __name__ == '__main__':
             with open(filename, encoding='utf=8') as stream:
                 counter.read(stream)
 
+    def format_freq(n, total, as_percentage=False, decimals=None):
+        freq = (n*100 if as_percentage else n) / total
+        return (
+                (('{:.' + str(decimals) + 'f}').format(freq)
+                    if decimals is not None
+                    else str(freq)) +
+                ('%' if as_percentage else '')
+                )
+
     def print_counter(cnt, items_name):
-        print(cnt.word_count(), items_name + ',',
+        total_items = cnt.word_count()
+        print(total_items, items_name + ',',
                 cnt.unique_word_count(), 'unique', end='')
         results = cnt.get_sorted_words()
         if args.n:
@@ -195,7 +213,9 @@ if __name__ == '__main__':
             word = repr(x.word)
             if args.dont_quote_words:
                 word = word[1:-1]
-            print(word, x.count, sep=sep)
+            freq_str = format_freq(x.count, total_items,
+                    args.percentage, args.decimals)
+            print(word, x.count, freq_str, sep=sep)
 
     print_counter(counter, 'characters' if args.char else 'words')
     if args.groups:
