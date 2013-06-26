@@ -34,6 +34,8 @@ def parse_args():
             help='show frequency as percentage')
     parser.add_argument('-d', '--decimals', type=int, metavar='D',
             help='show frequency with %(metavar)s decimals')
+    parser.add_argument('-l', '--letters-only', action='store_true',
+            help='Count letters only. Only valid in character-counting mode.')
 
     args = parser.parse_args()
     if args.n < 0:
@@ -47,15 +49,20 @@ def parse_args():
         print('Invalid decimals', args.decimals, 'must be >= 0',
                 file=sys.stderr)
         sys.exit(1)
+    if args.letters_only and not args.char:
+        print('--letters-only is only valid in character-counting mode',
+                file=sys.stderr)
+        sys.exit(1)
     return args
 
 
 class BaseCounter():
 
     def __init__(self, case_sensitive=False, load_in_memory=False,
-            group_size=0):
+            group_size=0, letters_only=False):
         self.case_sensitive = case_sensitive
         self.load_in_memory = load_in_memory
+        self.letters_only = letters_only
         self._word_counts = {}
 
         self.group_size = group_size
@@ -113,6 +120,11 @@ class CharCounter(BaseCounter):
             self.tail = deque([], self.group_size)
 
     def add(self, c, **args):
+        if self.letters_only and not c.isalpha():
+            if self.group_size:
+                self.tail.clear()
+            return
+
         super().add(c, **args)
         if self.group_size:
             self.tail.append(c)
@@ -180,7 +192,8 @@ if __name__ == '__main__':
     class_ = CharCounter if args.char else WordCounter
     counter = class_(case_sensitive=args.case_sensitive,
             load_in_memory=args.load_in_memory,
-            group_size=args.group_size if args.groups else 0)
+            group_size=args.group_size if args.groups else 0,
+            letters_only=args.letters_only)
 
     for filename in args.file:
         if filename == '-':
@@ -217,8 +230,10 @@ if __name__ == '__main__':
                     args.percentage, args.decimals)
             print(word, x.count, freq_str, sep=sep)
 
-    print_counter(counter, 'characters' if args.char else 'words')
+    print_counter(counter, ('letters' if args.letters_only else 'characters')
+            if args.char else 'words')
     if args.groups:
         print()
         print_counter(counter.group_counter,
-                ('character' if args.char else 'letter') + ' groups')
+                (('letter' if args.letters_only else 'character')
+                    if args.char else 'letter') + ' groups')
