@@ -8,7 +8,6 @@ import (
 type cmdlineT struct {
 	laddr                      string // address to listen to
 	caddr                      string // address to connect to
-	useMillis                  bool
 	minPreDelay, maxPreDelay   int
 	minPostDelay, maxPostDelay int
 	bufsize                    int
@@ -21,16 +20,14 @@ func getCmdLine() (result cmdlineT) {
 		"listen address, \":9090\" or \"localhost:9090\"")
 	flag.StringVar(&result.caddr, "connect", ":8080",
 		"connect address, \":8080\" or \"example.com:8080\"")
-	flag.BoolVar(&result.useMillis, "millis", false,
-		"use milliseconds not seconds for intervals")
 	flag.IntVar(&result.minPreDelay, "minpre", 0,
 		"minimum pre delay (before any data is transmitted)")
-	flag.IntVar(&result.maxPreDelay, "maxpre", 2,
+	flag.IntVar(&result.maxPreDelay, "maxpre", 0,
 		"maximum pre delay (before any data is transmitted)")
 	flag.IntVar(&result.minPostDelay, "minpost", 0,
 		"minimum post delay (before each chunk of data, "+
 			"except the first, is transmitted)")
-	flag.IntVar(&result.maxPostDelay, "maxpost", 2,
+	flag.IntVar(&result.maxPostDelay, "maxpost", 0,
 		"maximum post delay (before each chunk of data, "+
 			"except the first, is transmitted)")
 	flag.IntVar(&result.bufsize, "bufsize", 1024,

@@ -10,14 +10,7 @@ import (
 
 func delay(min, max int) {
 	t := min + rand.Intn(max-min+1)
-
-	var d time.Duration
-	if cmdline.useMillis {
-		d = time.Millisecond
-	} else {
-		d = time.Second
-	}
-	time.Sleep(time.Duration(t) * d)
+	time.Sleep(time.Duration(t) * time.Millisecond)
 }
 
 func pipe(r io.Reader, w io.Writer) {
@@ -39,7 +32,7 @@ func pipe(r io.Reader, w io.Writer) {
 
 		if firstChunk {
 			firstChunk = false
-		} else {
+		} else if cmdline.maxPostDelay > 0 {
 			delay(cmdline.minPostDelay, cmdline.maxPostDelay)
 		}
 
@@ -76,7 +69,9 @@ func handleSync(conn net.Conn) {
 		}
 	}()
 
-	delay(cmdline.minPreDelay, cmdline.maxPreDelay)
+	if cmdline.maxPreDelay > 0 {
+		delay(cmdline.minPreDelay, cmdline.maxPreDelay)
+	}
 
 	ch := make(chan bool)
 	go func() {
