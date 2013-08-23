@@ -7,6 +7,33 @@ import shutil
 import sys
 
 
+# This program raises an interesting math question:
+# If we take a tuple of N items and shuffle them (with each permutation having
+# equal probability) what is the probability that all items have changed
+# position (or alternatively that some items haven't)?
+#
+# A permutation is ‘good’ if item ‘i’ is not in position ‘i’ (i.e. all items
+# have changed position). G(n) is the number of good permutations of n items.
+# There is at least 1 good permutation for n > 1, e.g. (n, n-1, … 2, 1).
+# Let this be a good permutation of n items:
+#  1 2 … k … n
+# ┌─┬─┬─┬─┬─┬─┐
+# │ │ │ │n│ │x│
+# └─┴─┴─┴─┴─┴─┘
+# Item n is in slot k ≠ n, slot n holds item x ≠ n. Let's swap slots k and n:
+#  1 2 … k … n
+# ┌─┬─┬─┬─┬─┬─┐
+# │ │ │ │x│ │n│
+# └─┴─┴─┴─┴─┴─┘
+# If x≠k, slots 1…n-1 form a good permutation of n-1 items.
+# If x=k, slots 1…k-1 and k+1…n-1 form a good permutation of n-1 items.
+# So a good permutation of n items can be created like this:
+# ― choose a k, 1<=k<=n-1.
+#   ― Choose a good permutation of n-1 items, and swap slots k and n
+#   ― Choose a good permutation of n-2 items, place n on slot k and k on slot n
+# G(n) = (n-1) × (G(n-1) + G(n-2))
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
             description='Prepend/Replace [number] to filenames ' +
