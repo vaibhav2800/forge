@@ -25,7 +25,7 @@
 # USA
 
 use strict;
-# use utf8;
+use utf8;
 
 
 ###########################
@@ -897,7 +897,7 @@ sub http_get {
 		if($response->is_error) {
 			my $code = $response->code;
 			my $message = $response->message;
-			$error = "Error: $code $message";
+			$error = "‹$user›\nError: $code $message";
 			$http_status->enqueue($error);
 			return $error;
 		}
@@ -931,7 +931,7 @@ sub http_get {
 		if ($post_response->is_error) {
 			my $code = $response->code;
 			my $message = $response->message;
-			$error = "Error: $code $message";
+			$error = "‹$user›\nError: $code $message";
 			$http_status->enqueue($error);
 			return $error;
 		}
@@ -952,7 +952,7 @@ sub http_get {
 			if($response->is_error) {
 				my $code = $response->code;
 				my $message = $response->message;
-				$error = "Error: $code $message";
+				$error = "‹$user›\nError: $code $message";
 				$http_status->enqueue($error);
 				return $error;
 			}
@@ -994,7 +994,7 @@ sub http_get {
 	}
 
 	
-	$http_status->enqueue($trans{notify_check});
+	$http_status->enqueue("‹$user›\n$trans{notify_check}");
 		
 	my $req = HTTP::Request->new($method => "$address$label");
 
@@ -1002,7 +1002,7 @@ sub http_get {
 	if ($response->is_error) {
 		my $code = $response->code;
 		my $message = $response->message;
-		$error = "Error: $code $message";
+		$error = "‹$user›\nError: $code $message";
 		$http_status->enqueue($error);
 		
 		# Incorrect username/password??
@@ -1193,7 +1193,7 @@ sub check {
 		if ($popup_authors) {
 			$popup_authors =~ s/, ([\w\s-]+)$/ $trans{notify_and} $1/; # replace final comma with "and"
 			$popup_authors = clean_text_and_decode($popup_authors);
-			$popup_text = "<span foreground=\"#000000\"><small>$trans{notify_new_mail}$popup_authors ...</small></span>";
+			$popup_text = "<span foreground=\"#000000\"><small>‹$user›\n$trans{notify_new_mail}$popup_authors ...</small></span>";
 		}
 		
 		# Save current unread list
@@ -1481,9 +1481,9 @@ sub notify {
 	
 	unless ($status) {
 		if ($new_mail > 1) {
-			$status = "<small><span foreground=\"#000000\">$trans{notify_multiple1}$new_mail$trans{notify_multiple2}</span></small>";
+			$status = "<small><span foreground=\"#000000\">‹$user›\n$trans{notify_multiple1}$new_mail$trans{notify_multiple2}</span></small>";
 		} elsif ($new_mail) {
-			$status = "<small><span foreground=\"#000000\">$trans{notify_single1}$new_mail$trans{notify_single2}</span></small>";
+			$status = "<small><span foreground=\"#000000\">‹$user›\n$trans{notify_single1}$new_mail$trans{notify_single2}</span></small>";
 		} else {
 			# No new messages
 			$image->set_from_pixbuf($no_mail_pixbuf);
@@ -1491,7 +1491,7 @@ sub notify {
 			my $time = $time_24 ? `date +\"%k:%M\"` : `date +\"%l:%M %P\"`;
 			chomp($time);
 			$time =~ s/^\s+//g;
-			$status = "<span foreground=\"#000000\">$trans{notify_no_mail} <small>($time)</small></span>";
+			$status = "<span foreground=\"#000000\">‹$user›\n$trans{notify_no_mail} <small>($time)</small></span>";
 			
 			@popup_status = ();
 			
@@ -1519,7 +1519,7 @@ sub notify {
 	# }
 	
 	# Don't destroy the popup containing mail messages if we're just doing another check ...
-	if (@messages && $redisplay && ($status =~ /$trans{notify_check}/ || $status =~ /$trans{notify_undoing}/)) {
+	if (@messages && $redisplay && ($status =~ /"‹$user›\n$trans{notify_check}"/ || $status =~ /$trans{notify_undoing}/)) {
 		$status_label->set_markup("<span foreground=\"#000000\"><small>$status</small></span>");
 		show_notify();
 		return;
