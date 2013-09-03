@@ -43,6 +43,8 @@ def parse_args():
             help='String before prepended number, default %(default)s.')
     parser.add_argument('-e', '--end-str', default=']', metavar='C',
             help='String after prepended number, default %(default)s.')
+    parser.add_argument('--strip', action='store_true',
+            help='Strip [number] prefixes only.')
 
     args = parser.parse_args()
     if len(args.start_str) < 1:
@@ -82,11 +84,14 @@ if __name__ == '__main__':
     random.shuffle(src_files)
     dest_files = []
     for i in range(len(src_files)):
-        dest_files.append(
-                args.start_str +
-                pad_to_length(str(i+1), max_length) +
-                args.end_str +
-                strip_prefix(src_files[i], args.start_str, args.end_str))
+        if args.strip:
+            dest_name = ''
+        else:
+            dest_name = (args.start_str +
+                    pad_to_length(str(i+1), max_length) +
+                    args.end_str)
+        dest_name += strip_prefix(src_files[i], args.start_str, args.end_str)
+        dest_files.append(dest_name)
 
     for f in dest_files:
         if os.path.exists(f):
