@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+    <application></application>
+    <version></version>
+    <threadsafe>true</threadsafe>
+
+    <!--
+        This exclude prevents files from being uploaded twice as both static
+        and resource files and taking up double the space in Google App Engine.
+    -->
+    <resource-files>
+        <exclude path="**"/>
+    </resource-files>
+</appengine-web-app>
