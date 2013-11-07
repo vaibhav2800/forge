@@ -1,0 +1,179 @@
+\documentclass[a4paper]{article}
+
+\usepackage{seestyle}
+
+\begin{document}
+
+\title{See Language Specification}
+\author{Mihai B.}
+\date{2010 June 16}
+\maketitle
+
+\section{Overview}
+See (pronounced like the German word) is a simple procedural C-like language.
+It has primitive types, structs, arrays and functions.
+Variables of type \verb=struct= and \emph{array} are references.
+Arrays are Java-like.
+
+At the global level we have functions, struct definitions,
+and variable declarations without initialization expressions.
+All global variables are initialized to the default value
+before starting program execution.
+All local variables are initialized at the point of declaration:
+with their initialization expression if present,
+otherwise with the default value.
+The default value is \verb=false= for \emph{booleans},
+\verb=0= for other primitive types
+and \verb=null= for references (arrays and structs).
+
+\verb=struct=s contain only declarations:
+for fields and for nested \verb=struct=s.
+Nested \verb=struct=s can be used with the syntax \verb=Outer.Inner=.
+Function bodies are code blocks.
+A code block can contain statements, \verb=struct= declarations,
+local variable declarations and nested code blocks (with the same elements).
+
+\subsection{Notes}
+The language does not allow declarations without definitions
+(i.e.\ declaring a variable without an initilization expression means
+initializing it with the default value for its type).
+This document uses the terms \emph{declaration} and \emph{definition}
+interchangeably; they both mean \emph{definition}.
+
+The word \emph{reference} is used with two meanings in this text:
+referencing a symbol (e.g.\ referencing \verb=x= in the expression \verb=x+1=)
+and a variable of type \verb=struct= or array.
+The author has tried to make context indicate the intended meaning
+(sometimes replacing the word with \emph{variable}).
+
+
+\section{Scopes}
+A See program has a global scope.
+Functions, nested code blocks and \verb=struct=s all introduce new scopes.
+
+Instructions \emph{define} and \emph{reference} symbols.
+Expressions \verb=x+2= and \verb=f(5)=
+reference variable \verb=x= and function \verb=f=.
+A variable declaration (e.g.\ \verb=A a;=) must first reference type \verb=A=
+then define variable \verb=a= in the current scope.
+A \verb=struct= declaration and a function declaration both
+define new symbols in the current scope (a new type and a new function).
+The function declaration also needs to reference
+the function's return type and its formal parameter types.
+
+
+\subsection{Resolving References}
+In general, symbol references are resolved starting in the current scope
+and moving outward (up to and including the global scope)
+until a symbol with the referenced name is found.
+When resolving a \emph{field access} (or \emph{nested struct}) expression
+such as \verb=head.next=,
+\verb=next= is resolved \emph{exclusively} within that \verb=struct='s scope
+(e.g.\ \verb=Node head;=).
+
+\paragraph{Forward references}
+are generally allowed.
+The only exception are forward references to local variables, which are illegal
+(like in Java and C++).
+A detailed discussion follows.
+
+Functions can be forward-referenced.
+
+Global variables can be referenced from any function
+(even if the function is placed before the variables in the input file).
+Global variables can not have initializing expressions,
+and are initialized to the default values
+(\verb=0=, \verb=false= or \verb=null=)
+before starting program execution.
+
+Types (whether defined globally or elsewhere) can be forward-referenced
+(as long as they are visible in the scope where they are being used).
+
+Local variables (defined in code blocks) may only be referenced
+\emph{after} their point of declaration.
+
+
+\subsection{Redefining Symbols}
+
+Declarations in code blocks (i.e.\ local variables and types)
+can redefine only global symbols; they can't redefine
+function parameter names or symbols defined elsewhere in the function
+(i.e.\ other local variables and types).
+Declarations in \verb=struct= bodies (i.e.\ field names and nested type names)
+have practically no limitations
+(they must not collide with each other
+or with the containing \verb=struct='s name).
+
+\begin{program}
+\begin{verbatimtab}
+struct A {
+	int x;
+	struct B {
+		int y;
+		struct ?name? { .. }
+		float ?name?;
+	}
+}
+\end{verbatimtab}
+\caption{Struct scopes: restrictions for contained names%
+	\label{scopes:struct-decl}}
+\end{program}
+
+Using Listing \ref{scopes:struct-decl} as an example,
+we'll show what names can be used inside a \verb=struct= declaration
+(replacing \emph{?name?} in the example).
+\verb=struct B= happens to be declared inside \verb=struct A=
+in Listing \ref{scopes:struct-decl},
+but it can be declared at the top level or inside a function:
+the following restrictions for \verb=B='s body stay the same.
+
+\emph{?name?} can be anything except \verb=B= and \verb=y=.
+In particular, \emph{?name?} can be \verb=A= or \verb=x=
+or the same name as a function.
+
+\begin{program}
+\begin{verbatimtab}
+int f(A p) {
+	A a;
+	struct A {
+		int i;
+	}
+	return a.i + p.x;
+}
+\end{verbatimtab}
+\caption{Function scopes: defining local variables and types%
+	\label{scopes:func-decl}}
+\end{program}
+
+Consider Listing \ref{scopes:func-decl} in the same file as
+Listing \ref{scopes:struct-decl}.
+This is an example of redefining symbols inside a function.
+
+Functions introduce two (nested) scopes:
+an (outer) scope for their formal parameters,
+and another (inner one) for their body.
+In the outer (parameter) scope we have \verb=p1=,
+of type \verb=A= from Listing \ref{scopes:struct-decl}.
+Another \verb=struct A= is defined in the function's body, 
+so local variable \verb=a= has this new type
+(which hides the outer \verb=A= in the function's body).
+Variable \verb=a='s definition forward references local type \verb=A=.
+The type is visible everywhere inside it's enclosing block.
+
+If we define a symbol \verb=x= somewhere in a code block,
+all instructions in that code block resolve \verb=x= to this local symbol.
+If \verb=x= is a type, it can be forward-referenced.
+If it's a local variable, forward references are illegal.
+
+When defining a symbol in a code block,
+the symbol's name must be different from all of the following:
+\begin{itemize}
+\item the enclosing function's name
+\item the enclosing function's formal parameter names
+\item all local variables visible from the current code block
+\item all local types (\verb=struct=s) visible from the current code block
+\end{itemize}
+In other words, we can redefine only global symbols
+with local type and variable names.
+
+\end{document}

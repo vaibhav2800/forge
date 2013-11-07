@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+
+<project name="sitecheck" default="jar">
+	<import file="../common-build.xml" />
+</project>

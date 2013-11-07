@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<project name="see" default="jar">
+	<import file="../common-build.xml" />
+
+	<property name="main.class" value="see.Main" />
+
+	<target name="count-grammars" depends="prepare">
+		<filelist dir="${dir.src.antlr}" id="grammar.files">
+			<file name="See.g" />
+			<file name="Def.g" />
+			<file name="Ref.g" />
+			<file name="Types.g" />
+		</filelist>
+
+		<property name="grammars.present" value="true" />
+	</target>
+</project>

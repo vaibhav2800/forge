@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="Ubuntu Package Parser" default="jar" basedir=".">
+
+	<!-- program argument for `run' target -->
+	<!-- if the user hasn't set `file' using -Dfile=upp.config.file, set it to empty here -->
+	<property name="file" value="" />
+
+	<!-- Directory with source code -->
+	<property name="src.dir" value="src" />
+
+	<!-- Dir with needed jars/compiled code -->
+	<property name="lib.dir" value="lib" />
+
+	<!-- Temporary build dirs -->
+	<property name="build.dir" value="build" />
+	<property name="build.classes" value="${build.dir}/classes" />
+	<property name="build.src" value="${build.dir}/src" />
+	<property name="build.src.antlr.output" value="${build.src}/com/github/mihaib/upp" />
+	<property name="dist.dir" value="dist" />
+	<property name="dist.lib" value="${dist.dir}/lib" />
+
+	<!-- Documentation dir -->
+	<property name="doc.dir" value="doc" />
+
+	<!-- JAR file name, Main Class name -->
+	<property name="jar.file" value="${dist.dir}/upp.jar" />
+	<property name="main.class" value="com.github.mihaib.upp.Comp" />
+
+	<!-- ClassPath -->
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
+
+	<!-- Target to create build directories before compile target -->
+	<target name="prepare">
+		<mkdir dir="${build.src.antlr.output}" />
+		<mkdir dir="${build.classes}" />
+	</target>
+
+	<!-- Target to clean everything -->
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${doc.dir}" />
+	</target>
+
+	<!-- Target to compile project -->
+	<target name="compile" depends="comp-antlr" description="Compile project.">
+		<javac srcdir="${src.dir};${build.src}" encoding="UTF-8" destdir="${build.classes}" classpathref="classpath" />
+	</target>
+
+	<!-- Target to compile with ANTLR -->
+	<target name="comp-antlr" depends="prepare">
+		<fileset dir="${src.dir}" id="grammar.fileset">
+			<include name="*.g" />
+		</fileset>
+
+		<pathconvert pathsep=" " property="list.of.files" refid="grammar.fileset" />
+
+		<!-- NOTE: `unless' only checks if the property is set, and doesn't care about its value -->
+		<java classname="org.antlr.Tool" classpathref="classpath" failonerror="true">
+			<arg value="-lib" />
+			<arg path="${build.src.antlr.output}" />
+			<arg value="-o" />
+			<arg path="${build.src.antlr.output}" />
+			<arg value="-make" />
+			<arg line="${list.of.files}" />
+		</java>
+	</target>
+
+	<!-- Target to copy lib/ to dist/lib -->
+	<target name="copy-lib">
+		<copy todir="${dist.lib}">
+			<fileset dir="${lib.dir}" />
+		</copy>
+	</target>
+
+	<!-- Target to build the jar -->
+	<target name="jar" depends="compile, copy-lib" description="Build the JAR.">
+		<path id="dist.classpath">
+			<fileset dir="${dist.lib}" includes="**/*.jar" />
+		</path>
+
+		<manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
+			<classpath refid="dist.classpath" />
+		</manifestclasspath>
+
+		<jar jarfile="${jar.file}" basedir="${build.classes}">
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- Target to run the jar -->
+	<target name="run" depends="jar" description="Run the program from the built JAR.">
+		<java jar="${jar.file}" fork="true">
+			<arg line="${file}" />
+		</java>
+	</target>
+
+	<!-- Target to generate the documentation – but not for the generated Lexer and Parser
+		(their .class files are mentioned as classpath instead of including their sources) -->
+	<target name="doc" depends="compile" description="Generate Java documentation.">
+		<javadoc sourcepath="${src.dir}" encoding="UTF-8" destdir="${doc.dir}">
+			<classpath refid="classpath" />
+			<!-- if the Lexer or Parser woud be returned by a method, the classpath entry below would be needed -->
+			<classpath path="${build.classes}" />
+		</javadoc>
+	</target>
+
+	<!-- Target to clean and then build the jar -->
+	<target name="rebuild" depends="clean, jar" description="Clean, compile and build the JAR file." />
+
+	<!-- Target to clean, build the jar and generate the documentation -->
+	<target name="all" depends="clean, jar, doc" description="Clean, compile, build the JAR and generate the documentation." />
+
+</project>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="AntlrCommonBuildfile" basedir=".">
+
+	<!-- Directory containing this buildfile -->
+	<dirname property="common.basedir" file="${ant.file.AntlrCommonBuildfile}" />
+	<!-- Directory containing project's buildfile -->
+	<dirname property="prj.basedir" file="${ant.file}" />
+
+	<!-- Directories with source code -->
+	<property name="dir.src" value="src" />
+	<property name="dir.src.java" value="${dir.src}/java" />
+	<property name="dir.src.antlr" value="${dir.src}/antlr" />
+
+	<!-- Dirs with needed jars; they might exist or not -->
+	<!-- project-specific -->
+	<property name="dir.lib.prj" value="lib" />
+	<property name="dir.lib.prj.devel" value="${dir.lib.prj}/development" />
+	<property name="dir.lib.prj.prod" value="${dir.lib.prj}/production" />
+	<property name="dir.lib.prj.always" value="${dir.lib.prj}/always" />
+	<!-- common -->
+	<property name="dir.lib.common" value="${common.basedir}/lib" />
+	<property name="dir.lib.common.devel" value="${dir.lib.common}/development" />
+	<property name="dir.lib.common.prod" value="${dir.lib.common}/production" />
+	<property name="dir.lib.common.always" value="${dir.lib.common}/always" />
+
+	<!-- Temporary build dirs -->
+	<property name="dir.build" value="build" />
+	<property name="dir.classes" value="${dir.build}/classes" />
+	<property name="dir.gen.src" value="${dir.build}/gen-src" />
+	<property name="dir.dist" value="dist" />
+	<property name="dir.dist.lib" value="${dir.dist}/lib" />
+
+	<!-- Classpaths with project-specific .jars first -->
+
+	<!-- Development ClassPath -->
+	<path id="classpath.devel">
+		<fileset dir="${dir.lib.prj.always}" includes="**/*.jar" erroronmissingdir="false" />
+		<fileset dir="${dir.lib.prj.devel}" includes="**/*.jar" erroronmissingdir="false" />
+
+		<fileset dir="${dir.lib.common.always}" includes="**/*.jar" erroronmissingdir="false" />
+		<fileset dir="${dir.lib.common.devel}" includes="**/*.jar" erroronmissingdir="false" />
+	</path>
+
+	<!-- Production ClassPath -->
+	<path id="classpath.prod">
+		<fileset dir="${dir.lib.prj.always}" includes="**/*.jar" erroronmissingdir="false" />
+		<fileset dir="${dir.lib.prj.prod}" includes="**/*.jar" erroronmissingdir="false" />
+
+		<fileset dir="${dir.lib.common.always}" includes="**/*.jar" erroronmissingdir="false" />
+		<fileset dir="${dir.lib.common.prod}" includes="**/*.jar" erroronmissingdir="false" />
+	</path>
+
+
+	<!--
+		Target which sets properties.
+
+		To change them, define (some of) these properties
+		in the including buildfile, or override this whole target.
+	-->
+
+	<target name="init-properties">
+		<property name="dir.antlr.output"
+			value="${dir.gen.src}/${ant.project.name}" />
+
+		<property name="main.class" value="${ant.project.name}.Main" />
+		<property name="jar.name" value="${ant.project.name}" />
+
+		<!-- Run `ant -Ddebug=true' to turn on debug info -->
+		<property name="debug" value="off" />
+	</target>
+
+
+	<!-- Target to clean everything -->
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${dir.build}" />
+		<delete dir="${dir.dist}" />
+	</target>
+
+	<!-- Target to create build directories before compile target -->
+	<target name="prepare" depends="init-properties">
+		<mkdir dir="${dir.antlr.output}" />
+		<mkdir dir="${dir.classes}" />
+		<mkdir dir="${dir.dist}" />
+	</target>
+
+
+	<!-- Target to compile project -->
+	<target name="compile" depends="gen-antlr" description="Compile project.">
+		<javac srcdir="${dir.src.java};${dir.gen.src}"
+			encoding="UTF-8"
+			destdir="${dir.classes}"
+			debug="${debug}"
+			classpathref="classpath.devel"
+			includeAntRuntime="false" />
+	</target>
+
+	<!--
+		If grammar files are found, set property grammars.present to true.
+
+		If file order is important, OVERRIDE this task:
+		– replace the fileset with a filelist having id="grammar.files"
+		– replace <condition..> with <property name="grammars.present" value="true" />
+	-->
+	<target name="count-grammars" depends="prepare">
+		<!-- Override using a filelist if order is important -->
+		<fileset dir="${dir.src.antlr}" id="grammar.files" erroronmissingdir="false">
+			<include name="**/*.g" />
+		</fileset>
+
+		<condition property="grammars.present">
+			<resourcecount refid="grammar.files" count="0" when="gt" />
+		</condition>
+	</target>
+
+	<!-- Target to generate with ANTLR only if grammar files are found -->
+	<target name="gen-antlr" depends="count-grammars" if="grammars.present">
+		<pathconvert pathsep=" " property="grammar.files.string" refid="grammar.files">
+			<!-- if file prefix matches 'from', perform mapping: -->
+			<map from="${prj.basedir}/" to="" />
+		</pathconvert>
+		<java classname="org.antlr.Tool" classpathref="classpath.devel" failonerror="true">
+			<arg value="-lib" />
+			<arg path="${dir.antlr.output}" />
+			<arg value="-fo" />
+			<arg path="${dir.antlr.output}" />
+			<arg value="-make" />
+			<arg line="${grammar.files.string}" />
+		</java>
+	</target>
+
+
+	<!-- Target to copy libs to dist/lib -->
+	<target name="copy-lib">
+		<copy todir="${dir.dist.lib}">
+			<path refid="classpath.prod" />
+		</copy>
+	</target>
+
+	<!-- Target to build the jar -->
+	<target name="jar" depends="compile, copy-lib" description="Build the JAR.">
+		<path id="dist.classpath">
+			<fileset dir="${dir.dist.lib}" includes="**/*.jar" erroronmissingdir="false" />
+		</path>
+
+		<property name="jar.file" value="${dir.dist}/${jar.name}.jar" />
+
+		<manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
+			<classpath refid="dist.classpath" />
+		</manifestclasspath>
+
+		<jar jarfile="${jar.file}" basedir="${dir.classes}">
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+
+
+	<!-- Target to rebuild everything -->
+	<target name="rebuild" depends="clean, jar" description="Clean then build the JAR" />
+
+</project>

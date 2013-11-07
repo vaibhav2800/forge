@@ -1,0 +1,6 @@
+(Ubuntu) Package Parser
+
+Parses a custom text file containing a list of (Ubuntu) programs.
+Packages which must be installed and some (configuration) notes
+may be present for each program.
+Programs can be grouped into ‘categories’.

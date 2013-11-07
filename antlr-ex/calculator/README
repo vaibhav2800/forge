@@ -1,0 +1,14 @@
+Expression calculator from the ANTLR book
+
+The original grammars are linked from the book to the book's website.
+I have added the Java package in the header, and type parameters for HashMap.
+
+I have also changed the WS rule from:
+WS  :   (' '|'\t'|'\r'|'\n')+ {skip();} ;
+to
+WS  :   (' '|'\t')+ {skip();} ;
+
+Although NEWLINE is defined before WS, WS seems to match two or more newlines
+(i.e. an empty input line) and the parser reports an error.
+I don't *know* but I suspect WS matches instead of NEWLINE
+because it can match more input.

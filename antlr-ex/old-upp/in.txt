@@ -1,0 +1,479 @@
+-- fresh install
+
+* GRUB {
+edit /etc/default/grub for timeout and recovery option
+$ cd /etc/grub.d/
+$ chmod -x 20_memtest86+ 30_os-prober
+$ update-grub
+/boot/grub/grub.cfg is regenerated
+
+https://wiki.ubuntu.com/Grub2
+}
+
+* Gnome * Maximize horizontally/vertically {
+$ gconf-editor
+apps -> metacity -> general
+action_middle_click_titlebar toggle_maximize_vertically
+action_right_click_titlebar toggle_maximize_horizontally
+}
+
+* Change first day of the week {
+$ sudo vim /usr/share/i18n/locales/en_US and change first_weekday to 2
+$ sudo locale-gen - to regenerate the locale
+}
+
+* Vim {
+@ vim bvi
+@gnome@ vim-gnome
+
+$ cp /usr/share/vim/vimrc ~/.vimrc
+
+# Java, Python indentation
+/usr/share/vim/vimcurrent/syntax/java.vim
+:set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
+/usr/share/vim/vimcurrent/syntax/python.vim
+:set tabstop=8 softtabstop=4 shiftwidth=4 expandtab
+
+# Add new extension to known language
+Add the following line to ~/.vimrc:
+au BufNewFile,BufRead *.see set filetype=cpp
+
+# right margin
+http://en.wikibooks.org/wiki/Learning_the_vi_editor/Vim/Enhancing_Vim
+Add this to .vimrc:
+:highlight rightMargin ctermbg=red
+:highlight rightMargin ctermfg=yellow
+:highlight rightMargin guibg=red
+:highlight rightMargin guifg=yellow
+:match rightMargin /.\%>80v/
+}
+
+* Java {
+@ sun-java6-jdk sun-java6-jre sun-java6-plugin
+@ sun-java6-fonts gsfonts-x11
+@ ant
+@ sun-java6-doc
+
+$ sudo update-java-alternatives -l
+$ sudo update-java-alternatives -s chosen_alternative
+
+Run .jar files from nautilus without setting executable bit:
+$ vim /usr/share/applications/sun-java6-java.desktop
+replace:
+Exec=cautious-launcher %f /path/to/java -jar
+with:
+Exec=/path/to/java -jar
+}
+
+* Eclipse {
+download Eclipse from the Internet
+#edit /etc/eclipse/java_home and move sun-java-6 to the top
+Window->Preferences->..->Installed JREs->select the jre->edit->select rt.jar->javadoc location->file:///usr/share/doc/sun-java6-jdk/html/api/index.html
+
+Unresponsive buttons fix:
+GDK_NATIVE_WINDOWS=1 ./eclipse
+
+If it crashes on startup (eg TTwb) add this line to eclipse.ini:
+-Dorg.eclipse.swt.browser.XULRunnerPath=/usr/lib/xulrunner
+
+source: http://benfletcher.wordpress.com/2010/01/02/64-bit-eclipse-3-4-2-on-64-bit-ubuntu-9-10-using-64-bit-ibm-java-6/
+}
+
+* Git {
+@git-core git-doc git-gui gitk curl gitg
+
+$git config --global color.diff auto
+$git config --global color.status auto
+$git config --global color.branch auto
+$git config --global user.name "Your Name"
+$git config --global user.email "you@example.com"
+}
+
+* Wireless {
+2010.04.02:
+	Ubuntu 9.10: STA driver not B43
+}
+
+* uTorrent {
+-------- run-utorrent.sh --------
+#!/bin/bash
+
+# Absolute path to this script
+SCRIPT=`readlink -f $0`
+
+# Absolute path this script is in
+DIR=`dirname $SCRIPT`
+
+export WINEPREFIX=$DIR/.wine
+wine $DIR/utorrent.exe /NOINSTALL
+-------- run-utorrent.sh --------
+}
+
+
+-- programs
+
+* Pidgin {
+@ pidgin
+}
+
+* gcc, make {
+@ build-essential manpages-dev meld
+}
+
+* Open Terminal (right-click) {
+@gnome@ nautilus-open-terminal
+}
+
+* gedit show spaces {
+@gnome@ gedit-plugins
+}
+
+* lm-sensors {
+@ sensors-applet hddtemp
+? lm-sensors
+$ sudo sensors-detect
+}
+
+* CheckGmail {
+@ checkgmail
+}
+
+* Flash {
+@ flashplugin-installer ttf-mscorefonts-installer
+? ttf-xfree86-nonfree
+}
+
+* Archive formats {
+@ unrar unace-nonfree p7zip p7zip-full
+?xz-utils
+}
+
+* chm {
+@gnome@ xchm
+@kde@ kchmviewer
+}
+
+*Ubuntu* Medibuntu Repository {
+https://help.ubuntu.com/community/Medibuntu
+}
+
+* Vlc {
+@ vlc
+?mozilla-plugin-vlc
+}
+
+* Wine {
+@ wine
+}
+
+* Mono {
+?libmono-winforms2.0-cil
+?libmono-i18n2.0-cil
+}
+
+*Gnome* gdesklets {
+@Gnome@ gdesklets
+}
+
+* LaTeX {
+@ perl-tk
+download texlive distribution from the Internet
+edit .bashrc:
+export PATH=$PATH:/path/to/texlive/2008/bin/x86_64-linux
+}
+
+* Adobe Reader {
+enable partner repository
+@ acroread
+? acroread-plugins mozilla-acroread
+
+Edit->Preferences->Page Display->Smooth Text: For Laptop/LCD screens
+}
+
+* imagemagick {
+@ imagemagick
+}
+
+* Subtitle editor {
+? subtitleeditor
+}
+
+* GParted {
+@ gparted
+}
+
+*Gnome* Gthumb {
+?Gnome? gthumb
+}
+
+* htop {
+@ htop
+}
+
+* soundconverter {
+? soundconverter
+?gstreamer0.10-plugins-ugly-multiverse
+}
+
+* Thunderbird {
+@ thunderbird
+@Gnome@ thunderbird-gnome-support
+? latex-xft-fonts
+}
+
+* Other {
+@ ttf-dejavu ttf-dejavu-extra
+?libdvdcss2
+?w64codecs or w32codecs
+}
+
+* Extract icons from exe files {
+http://wineicons.sourceforge.net/
+}
+
+* Opera {
+? libqt3-mt
+}
+
+* LSB {
+? lsb-cxx
+lsb-cxx is enough for lmgrd; there is a lsb package which depends on lsb-cxx
+NOTE: removes nullmailer
+}
+
+* Inkscape {
+@ inkscape
+}
+
+* Haskell {
+? ghc6
+}
+
+* Python {
+@ python3 idle3
+}
+
+* VirtualBox {
+http://www.virtualbox.org/wiki/Linux_Downloads
+
+NAT Port Forwarding:
+http://www.virtualbox.org/manual/ch06.html#natforward
+
+VBoxManage setextradata "Linux Guest"
+      "VBoxInternal/Devices/pcnet/0/LUN#0/Config/guestssh/Protocol" TCP
+VBoxManage setextradata "Linux Guest"
+      "VBoxInternal/Devices/pcnet/0/LUN#0/Config/guestssh/GuestPort" 22
+VBoxManage setextradata "Linux Guest"
+      "VBoxInternal/Devices/pcnet/0/LUN#0/Config/guestssh/HostPort" 2222
+}
+
+* MySQL {
+http://dev.mysql.com/doc/refman/5.5/en/installing-binary.html
+http://www.bluecrownsoftware.com/article/271/Installing-MySQL-without-Root-Access-on-Linux
+
+$ ./scripts/mysql_install_db --basedir=. --datadir=./data
+
+1. With config file:
+-------------------
+
+-------- ~/.my.cnf --------
+[client]
+socket		= /path/to/mysql/data/mysql.sock
+#user		= root
+
+[mysqld]
+socket		= mysql.sock
+pid-file	= mysql.pid
+log-error	= mysql.err
+basedir		= /path/to/mysql/
+datadir		= /path/to/mysql/data/
+-------- ~/.my.cnf --------
+
+START: mysqld
+STOP: mysqladmin --user=root shutdown
+CONNECT: mysql
+
+2. No config file:
+-----------------
+START: ./bin/mysqld --basedir=. --datadir=./data --log-error=./data/mysql.err --pid-file=./mysql.pid --socket=mysql.sock
+STOP: ./bin/mysqladmin --socket=./data/mysql.sock --user=root shutdown
+CONNECT: ./bin/mysql --socket=./data/mysql.sock
+}
+
+* GlassFish {
+asadmin start-domain --verbose
+asadmin stop-domain
+
+asadmin start-database
+asadmin stop-database
+
+asadmin deploy full-path-to-war-file
+asadmin list-components
+asadmin undeploy context-root
+}
+
+* Sourceforge Web (Bookmarks) {
+sftp://user,project@web.sourceforge.net/home/groups/p/pr/project/htdocs
+sftp://user@web.sourceforge.net/home/userweb/u/us/user/htdocs
+}
+
+* tree {
+@ tree
+}
+
+* Thrift {
+? libboost-dev flex bison
+
+Get it from the apache website (e.g. thrift-0.2.0-incubating.tar.gz).
+
+$ ./configure
+$ make
+The executable is: compiler/cpp/thrift
+
+For Java .jars go to lib/java/
+$ ant
+The jars are: libthrift.jar and the ones in build/ivy/lib/
+}
+
+* GIMP {
+@ gimp
+}
+
+* TextTest {
+? tkdiff
+
+-------- ~/.texttest/config --------
+view_program:gedit
+-------- ~/.texttest/config --------
+
+$ python path/to/texttest/source/bin/texttest.py
+
+To use relative paths in config.<app>:
+# Full path to the System Under Test
+executable:$TEXTTEST_ROOT/hello.py
+
+To copy files/dirs to the sandbox, add to application's config.<app>:
+copy_test_path:file.txt
+copy_test_path:dir
+TextTest searches in the test, then the parent test suite, up to the root.
+}
+
+* Go language {
+Clone hg repo in /path/to/go-repo
+
+export GOROOT=/path/to/go-repo
+export GOARCH=amd64
+export GOOS=linux
+export GOBIN=/path/to/go-bin
+
+cd src/
+./all.bash
+
+Update repo with (I think):
+hg pull -u -r release
+
+Syntax and filetype detect in go-repo/misc/vim
+Link to them from in ~/.vim/syntax/go.vim and ~/.vim/ftdetect/go.vim
+
+Indentation file: http://go-lang.cat-v.org/text-editors/vim/
+Place it in ~/.vim/indent/go.vim
+
+Gedit: place go.lang from http://go-lang.cat-v.org/text-editors/
+in ~/.local/share/gtksourceview-2.0/language-specs/
+}
+
+
+-- sysadmin
+
+* Ubuntu * Remove old kernels (after restarting with the new kernel) {
+$ sudo apt-get purge linux-image-2.<version>-generic linux-headers-2.<version>
+}
+
+* Debian * startup script {
+http://www.debian-administration.org/articles/28
+
+Write executable script /etc/init.d/myscript.
+To use it:
+# update-rc.d myscript defaults
+To stop using it:
+# update-rc.d -f myscript remove
+
+-------- /etc/init.d/myscript --------
+#!/bin/bash
+# Caution: /path/to/mysrv must be non-blocking
+
+case "$1" in
+	start)
+		/bin/su user -c "/path/to/mysrv arg1 arg2 arg3"
+		;;
+	stop)
+		/bin/su user -c "killall mysrv"
+		;;
+	*)
+		echo "Usage: /etc/init.d/myservice {start|stop}"
+		;;
+esac
+-------- /etc/init.d/myscript --------
+}
+
+* Add user {
+$ adduser -u UID name
+Use System->Administration->Users and Groups to give/manage privileges
+}
+
+* JFileSync {
+# build from sources
+Profiles are stored as .xml files – that's all you need.
+Disable `replicate write protection' if running jfs as a different user
+(it will create read-only files if that user has no write access to sources).
+
+I'm using: Force Source Structure for simple mirroring.
+Automatic mode may be good for more complicated modify scenarios.
+With no synchronization history,
+(new computer, delete history, or you just choose not to store it)
+I think jfs will ask you what to do for 2 files with different timestamps.
+}
+
+* VMWare Player {
+Download and install.
+Service runs at startup: /etc/rc[235].d/vmware -> /etc/init.d/vmware
+
+To disable automatic startup:
+# update-rc.d -f vmware remove
+
+To re-enable:
+# update-rc.d vmware start 19 2 3 5 . stop 08 2 3 5 .
+
+To manually start:
+# /etc/init.d/vmware start
+
+Downloading VMWare Tools from the GUI puts .iso files in
+/usr/lib/vmware/isoimages
+
+If vmplayer-daemon uses up the CPU:
+Uncheck all auto-update, auto-download, submit statistics
+# cd /usr/lib/vmware/bin
+# mv vmplayer-daemon vmplayer-daemon1
+}
+
+
+-- other
+
+* Gnome * Keyboard shortcuts {
+(http://strabes.wordpress.com/2006/11/13/create-custom-keyboard-shortcuts-in-ubuntu/)
+Some can be set in 'keyboard shortcuts', some can't (like Mod4+W for web browser).
+Keyboard -> Layout options -> Alt/Win-key behavior -> Super is mapped to the Win-keys
+$ gconf-editor
+Browse to apps/metacity/keybinding_commands
+Write "firefox" for command_1
+Browse to apps/metacity/global_keybindings
+Write "<Mod4>w" for run_command_1
+}
+
+* 10.04 * Remove panel icons {
+^ indicator-messages indicator-me
+}
+
+* 10.04 * Ask for password when mounting internal media {
+^ policykit-desktop-privileges
+}

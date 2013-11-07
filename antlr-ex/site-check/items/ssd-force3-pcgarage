@@ -1,0 +1,6 @@
+grammar=pcgarage
+url=http://www.pcgarage.ro/ssd/corsair/force-series-3-60gb-sata-iii-25-inch/
+User-Agent=Price Checker
+
+# Only notify if price has changed by more than ‘notify-over’
+notify-over=5

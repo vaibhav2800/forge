@@ -1,0 +1,3 @@
+*.jar
+/tmp[1-9]
+/calculator/build/

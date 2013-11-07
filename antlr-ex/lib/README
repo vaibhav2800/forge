@@ -1,0 +1,8 @@
+There are (at most) 3 types of .jars needed,
+which must be placed in the following subdirectories:
+
+- always/	contains .jars needed for both building and running the project
+- development/	contains .jars needed only when building the project
+- production/	contains .jars needed only when running the project
+
+Check the README file in each subdirectory for the list of .jars required.
