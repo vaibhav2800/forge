@@ -27,17 +27,21 @@ def parse_args():
     gae_group.add_argument('--appengine-email', metavar='email')
     gae_group.add_argument('--appengine-version', metavar='version')
 
-    github_group = parser.add_argument_group('GitHub')
-    github_group.add_argument('--github-push-url', metavar='url')
-    github_group.add_argument('--github-branch', metavar='branch')
-    github_group.add_argument('--github-commit-message', metavar='msg')
-    github_group.add_argument('--github-dns-cname', metavar='cname',
-            help='optional DNS CNAME')
-
     git_group = parser.add_argument_group('Git')
     git_group.add_argument('--git-push-url', metavar='url')
-    git_group.add_argument('--git-branch', metavar='branch')
+    git_group.add_argument('--git-branch', metavar='branch', default="master",
+            help="Branch to push to, default %(default)s")
     git_group.add_argument('--git-commit-message', metavar='msg')
+    git_group.add_argument('--git-user-name', metavar='"A U Thor"',
+            default="user", help="git user.name, default %(default)s")
+    git_group.add_argument('--git-user-email', metavar='author@example.com',
+            default="user@host", help="git user.email, default %(default)s")
+
+    github_group = parser.add_argument_group('GitHub',
+            'Accepts all options in the Git section and additionally:')
+    github_group.add_argument('--github-dns-cname', metavar='cname',
+            help='optional DNS CNAME. Set your A record to the same IP as '
+            + 'pages.github.com.')
 
     return parser.parse_args()
 
@@ -58,11 +62,9 @@ def getDestination(args, path):
         return GoogleAppEngineDest(path, args.appengine_app_id,
                 args.appengine_email, args.appengine_version)
     elif args.dest == 'git':
-        return GitDest(path, args.git_push_url, args.git_branch,
-                args.git_commit_message)
+        return GitDest(path, args)
     elif args.dest == 'github':
-        return GitHubDest(path, args.github_push_url, args.github_branch,
-                args.github_commit_message, args.github_dns_cname)
+        return GitHubDest(path, args)
     else:
         raise ValueError('Unexpected destination "' + args.dest + '"')
 
@@ -98,16 +100,21 @@ class GoogleAppEngineDest(Destination):
 
 class GitDest(Destination):
 
-    def __init__(self, path, pushUrl, branch, commitMsg):
+    def __init__(self, path, args):
         super().__init__(path)
-        if not pushUrl or not branch or not commitMsg:
+        self.pushUrl, self.branch = args.git_push_url, args.git_branch
+        self.commitMsg = args.git_commit_message
+        self.userName, self.userEmail = args.git_user_name, args.git_user_email
+        if (not self.pushUrl or not self.branch or not self.commitMsg
+                or not self.userName or not self.userEmail):
             raise ValueError('Incomplete args for Git')
-        self.pushUrl = pushUrl
-        self.branch = branch
-        self.commitMsg = commitMsg
 
     def commit(self):
         subprocess.check_call(['git', 'init'], cwd=self.path)
+        subprocess.check_call(['git', 'config', 'user.name', self.userName],
+                cwd=self.path)
+        subprocess.check_call(['git', 'config', 'user.email', self.userEmail],
+                cwd=self.path)
         subprocess.check_call(['git', 'add', '.'], cwd=self.path)
         subprocess.check_call(['git', 'commit', '-m', self.commitMsg],
                 cwd=self.path)
@@ -123,9 +130,9 @@ class GitDest(Destination):
 
 class GitHubDest(GitDest):
 
-    def __init__(self, path, pushUrl, branch, commitMsg, cname):
-        super().__init__(path, pushUrl, branch, commitMsg)
-        self.cname = cname
+    def __init__(self, path, args):
+        super().__init__(path, args)
+        self.cname = args.github_dns_cname
 
     def upload(self):
         if self.cname:
