@@ -57,6 +57,12 @@ def getDestination(args, path):
     if args.dest == 'appengine':
         return GoogleAppEngineDest(path, args.appengine_app_id,
                 args.appengine_email, args.appengine_version)
+    elif args.dest == 'git':
+        return GitDest(path, args.git_push_url, args.git_branch,
+                args.git_commit_message)
+    elif args.dest == 'github':
+        return GitHubDest(path, args.github_push_url, args.github_branch,
+                args.github_commit_message, args.github_dns_cname)
     else:
         raise ValueError('Unexpected destination "' + args.dest + '"')
 
@@ -88,6 +94,45 @@ class GoogleAppEngineDest(Destination):
         p.stdin.close()
         if p.wait():
             raise Exception('appcfg.sh failed')
+
+
+class GitDest(Destination):
+
+    def __init__(self, path, pushUrl, branch, commitMsg):
+        super().__init__(path)
+        if not pushUrl or not branch or not commitMsg:
+            raise ValueError('Incomplete args for Git')
+        self.pushUrl = pushUrl
+        self.branch = branch
+        self.commitMsg = commitMsg
+
+    def commit(self):
+        subprocess.check_call(['git', 'init'], cwd=self.path)
+        subprocess.check_call(['git', 'add', '.'], cwd=self.path)
+        subprocess.check_call(['git', 'commit', '-m', self.commitMsg],
+                cwd=self.path)
+
+    def push(self):
+        subprocess.check_call(['git', 'push', self.pushUrl,
+            '+master:' + self.branch], cwd=self.path)
+
+    def upload(self):
+        self.commit()
+        self.push()
+
+
+class GitHubDest(GitDest):
+
+    def __init__(self, path, pushUrl, branch, commitMsg, cname):
+        super().__init__(path, pushUrl, branch, commitMsg)
+        self.cname = cname
+
+    def upload(self):
+        if self.cname:
+            with open(os.path.join(self.path, 'CNAME'), mode='x',
+                    encoding='utf-8') as f:
+                f.write(self.cname)
+        super().upload()
 
 
 if __name__ == '__main__':
