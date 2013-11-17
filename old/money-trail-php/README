@@ -1,0 +1,2 @@
+Copy this dir to your webserver.
+Edit db.php for the path of your SQLite3 DB file on the server.

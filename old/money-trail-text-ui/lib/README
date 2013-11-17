@@ -1,0 +1,6 @@
+Optional packages:
+
+– dateutil
+Parses (human) date strings.
+Download from http://labix.org/python-dateutil
+Copy its ‘dateutil’ directory here.

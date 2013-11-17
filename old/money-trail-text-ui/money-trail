@@ -1,0 +1,10 @@
+#!/bin/bash
+
+SCRIPT=`readlink -f "$0"`
+DIR=`dirname "$SCRIPT"`
+
+SQL3DB=money-trail.db
+python3 "$DIR/money-trail.py" $SQL3DB \
+	--run money-trail.sql \
+	--dump "money-trail-[TIME].sql" \
+	&& rm $SQL3DB

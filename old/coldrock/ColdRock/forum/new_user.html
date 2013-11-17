@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Enter your data</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<script type="text/javascript">
+    function verif(){
+	 x=document.myForm;
+	 if(x.parola.value!=x.parola2.value) {alert("Passwords don't match!!!"); return false;}
+	 if((x.NumePrenume.value)=="" || x.nume.value=="" || x.mail.value=="" || x.parola.value=="") {alert("Please complete all fields!");return false;}
+	 return true;
+	}
+</script>
+
+<body bgcolor="#000000" text="#CCCC33">
+<font size="4">
+<br><center><font size="6">FORUM SIGN-UP</font></center><br>
+<form enctype="multipart/form-data" action="creare.php" method="post" name="myForm" onSubmit="return verif()">
+<table>
+	<tr>
+		<td align="right"><font size="5">Username:</font></td>
+		<td><input name="nume" type="text" maxlength="30"></td>
+	</tr>
+	<tr>
+		<td align="right"><font size="5">Password:</font></td>
+		<td><input name="parola" type="password" maxlength="30"></td>
+	</tr>
+	<tr>
+		<td align="right"><font size="5">Confirm password:</font></td>
+		<td><input name="parola2" type="password" maxlength="30"></td>
+	</tr>
+	<tr>
+		<td align="right"><font size="5">Real name:</font></td>
+		<td><input name="NumePrenume" type="text" maxlength="50"></td>
+	</tr>
+	<tr>
+		<td align="right" valign="top"><font size="5">E-mail address:</font></td>
+		<td><input name="mail" type="text" maxlength="50"><br>(we can contact you if you forget your password)</td>
+	</tr>
+	<tr>
+		<td align="right" valign="top"><font size="5">Choose an image:</font></td>
+		<td>
+			<input type="hidden" name="MAX_FILE_SIZE" value="204800">
+			<input name="imagine" type="file">
+			<br>(optional, can also be submitted later)
+			<br>File size must not exceed 200kB.
+		</td>
+	</tr>
+	<tr>
+		<td><input type="submit" value="Register" /></td>
+	</tr>
+</table>
+</form>
+</font>
+</body>
+</html>

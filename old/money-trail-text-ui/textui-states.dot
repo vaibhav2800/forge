@@ -1,0 +1,74 @@
+digraph textui_states {
+	Exit	[shape=doublecircle]
+
+	MainMenu -> Exit	[label=q]
+	MainMenu -> AccountMgmt [label=a]
+	MainMenu -> CategMgmt [label=c]
+	MainMenu -> transaction_SelectAccount [label=t]
+
+	AccountMgmt -> MainMenu [label=q]
+	AccountMgmt -> AccountCreateCollect [dir=both label=c]
+
+	AccountCreateCollect [color=blue label=AccountCreate]
+	AccountCreate_input [color=green label="name\ncurrency"]
+	AccountCreateAction [color=red label="action"]
+	AccountCreateCollect -> AccountCreate_input [dir=both]
+	AccountCreateCollect -> AccountCreateAction [dir=both]
+
+	CategMgmt -> MainMenu [label = q]
+	CategMgmt -> CategCreateCollect [dir=both label=c]
+
+	CategCreateCollect [color=blue label=CategCreate]
+	CategCreate_input [color=green label="name"]
+	CategCreateAction [color=red label="action"]
+	CategCreateCollect -> CategCreate_input [dir=both]
+	CategCreateCollect -> CategCreateAction [dir=both]
+
+	transaction_SelectAccount
+		[color=orange label="transaction\nSelectAccount"]
+	transaction_SelectAccount -> AccountTransaction
+
+	AccountTransaction -> MainMenu [label=b]
+	AccountTransaction -> AccountIncomeCollect [dir=both label=i]
+	AccountTransaction -> AccountPaymentCollect [dir=both label=p]
+	AccountTransaction -> transfer_SelectAccount [label=t]
+
+	AccountIncomeCollect [color=blue label="Income"]
+	income_input [color=green label="date\ndescription\ncategory\namount"]
+	AccountIncomeAction [color=red label="action"]
+	AccountIncomeCollect -> income_input [dir=both]
+	AccountIncomeCollect -> AccountIncomeAction [dir=both]
+
+	AccountPaymentCollect [color=blue label="Payment"]
+	payment_input [color=green label="date\ndescription\ncategory\namount"]
+	AccountPaymentAction [color=red label="action"]
+	AccountPaymentCollect -> payment_input [dir=both]
+	AccountPaymentCollect -> AccountPaymentAction [dir=both]
+
+	transfer_SelectAccount [color=orange label="transfer\nSelectAccount"]
+	transfer_SelectAccount -> AccountPreTransfer
+
+	AccountPreTransfer -> AccountTransaction
+	AccountPreTransfer -> AccountTransferCollect
+
+	AccountTransferCollect [color=blue label="Transfer"]
+	transfer_input
+		[color=green label="date\ndescription\ncategory\namount"]
+	AccountTransferAction [color=red label="action"]
+	AccountTransferCollect -> AccountTransaction
+	AccountTransferCollect -> transfer_input [dir=both]
+	AccountTransferCollect -> AccountTransferAction [dir=both]
+
+
+	subgraph {
+		CollectData [color=blue]
+		BounceInput [color=green]
+		BounceOption [color=green]
+		BounceAction [color=red]
+		CollectData -> BounceInput [dir=both]
+		CollectData -> BounceOption [dir=both]
+		CollectData -> BounceAction [dir=both]
+	}
+
+	SelectAccount [color=orange]
+}

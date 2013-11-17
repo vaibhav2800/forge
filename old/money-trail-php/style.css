@@ -1,0 +1,58 @@
+@charset "utf-8";
+
+div.newItemArea {
+	/* inline-block makes the div only as wide as its content */
+	display: inline-block;
+	margin-bottom: 10px;
+}
+
+div.existingItemsArea {
+	display: inline-block;
+}
+
+/* direct children of newItemArea, existingItemsArea */
+div.newItemArea > *, div.existingItemsArea > * {
+	margin: 8px;
+}
+
+
+div.newItemArea.newCurrencyArea {
+	background-color: PaleGreen;
+}
+
+div.newItemArea.newCategoryArea {
+	background-color: PeachPuff;
+}
+
+div.newItemArea.newAccountArea {
+	background-color: PaleTurquoise;
+}
+
+div.newItemArea.newTransactionArea {
+	background-color: AliceBlue;
+}
+
+
+#newTransactionForm td, #transactions_browser td {
+	vertical-align: top;
+}
+
+label.parsedDate {
+	color: Gray;
+}
+
+.amount {
+	text-align: right;
+}
+
+tr.income, tr.income input, tr.income select:enabled {
+	color: DarkGreen;
+}
+
+tr.payment, tr.payment input, tr.payment select:enabled {
+	color: DarkRed;
+}
+
+tr.transfer, tr.transfer input, tr.transfer select:enabled {
+	color: DarkBlue;
+}
