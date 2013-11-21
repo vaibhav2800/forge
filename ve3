@@ -1,0 +1,35 @@
+#! /usr/bin/env bash
+
+set -u # exit if using uninitialised variable
+set -e # exit if some command in this script fails
+trap "echo $0 failed because a command in the script failed" ERR
+
+if [ $# != "1" ]; then
+	echo "Python3 virtual environment"
+	echo "Usage: $0 ENV_DIR"
+	exit 1
+fi
+
+# Following the instructions at:
+# http://homework.nwsnet.de/releases/8aff/
+
+ENV="$1"
+python3 -m venv "$ENV"	# or: pyvenv-3.3 "$ENV"
+
+set +u
+set +e
+. "$ENV"/bin/activate
+set -u
+set -e
+
+# some of these commands download files in the current dir
+TMPDIR=`mktemp -d`
+cd "$TMPDIR"
+
+wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
+wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py -O - | python
+
+cd - >/dev/null
+rm -rf "$TMPDIR"
+
+echo ". $ENV/bin/activate"
