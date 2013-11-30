@@ -2,9 +2,11 @@
 
 import argparse
 from collections import OrderedDict
+import html
 import os
 import string
 import textwrap
+import urllib.parse
 
 
 def parse_args():
@@ -24,6 +26,8 @@ html_start_templ = string.Template(textwrap.dedent('''\
         </head>
         <body>
         '''))
+def getHtmlStart(title):
+    return html_start_templ.substitute({'title': html.escape(title)})
 
 html_end = textwrap.dedent('''\
         </body>
@@ -31,12 +35,25 @@ html_end = textwrap.dedent('''\
         ''')
 
 dir_templ = string.Template(textwrap.dedent('''\
-        <a href="$name/">$name/</a> $size<br>
+        <a href="$nameHref/">$nameText/</a> $size<br>
         '''))
 
 file_templ = string.Template(textwrap.dedent('''\
-        <a href="$name">$name</a> $size<br>
+        <a href="$nameHref">$nameText</a> $size<br>
         '''))
+
+def getLinkHtml(whichTempl, name, size):
+    return whichTempl.substitute({
+        'nameHref': urllib.parse.quote(name),
+        'nameText': html.escape(name),
+        'size': html.escape(human_size(size))
+        })
+
+def getDirHtml(name, size):
+    return getLinkHtml(dir_templ, name, size)
+
+def getFileHtml(name, size):
+    return getLinkHtml(file_templ, name, size)
 
 
 def human_size(n, units=OrderedDict((
@@ -67,16 +84,16 @@ def process_tree(root, title):
 
     index_path = os.path.join(root, args.index_file)
     with open(index_path, mode='x', encoding='utf-8') as f:
-        f.write(html_start_templ.substitute({'title': title}))
+        f.write(getHtmlStart(title))
         for name in names:
             path = os.path.join(root, name)
             if os.path.isdir(path):
                 size = process_tree(path, name)
-                templ = dir_templ
+                htmlGetter = getDirHtml
             else:
                 size = os.path.getsize(path)
-                templ = file_templ
-            f.write(templ.substitute({'name': name, 'size': human_size(size)}))
+                htmlGetter = getFileHtml
+            f.write(htmlGetter(name, size))
             total_size += size
         f.write(html_end)
 
